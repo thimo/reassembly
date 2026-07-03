@@ -1,0 +1,21 @@
+# Xcode / Swift
+## Build artefacten
+DerivedData/
+build/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+
+## Per-gebruiker Xcode-state (schema-selectie, breakpoints, window layout)
+xcuserdata/
+*.xcuserstate
+
+## Swift Package Manager
+.swiftpm/
+.build/
+
+## macOS
+.DS_Store
+
+## Werkbestanden (previews, downloads)
+tmp/

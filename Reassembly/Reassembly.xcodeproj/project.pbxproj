@@ -1,0 +1,593 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		3568B9982FF7EE21007DA0AB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3568B9822FF7EE20007DA0AB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3568B9892FF7EE20007DA0AB;
+			remoteInfo = Reassembly;
+		};
+		3568B9A22FF7EE21007DA0AB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3568B9822FF7EE20007DA0AB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3568B9892FF7EE20007DA0AB;
+			remoteInfo = Reassembly;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		3568B98A2FF7EE20007DA0AB /* Reassembly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Reassembly.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3568B9972FF7EE21007DA0AB /* ReassemblyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReassemblyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3568B9A12FF7EE21007DA0AB /* ReassemblyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReassemblyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		3568B98C2FF7EE20007DA0AB /* Reassembly */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Reassembly;
+			sourceTree = "<group>";
+		};
+		3568B99A2FF7EE21007DA0AB /* ReassemblyTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ReassemblyTests;
+			sourceTree = "<group>";
+		};
+		3568B9A42FF7EE21007DA0AB /* ReassemblyUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ReassemblyUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3568B9872FF7EE20007DA0AB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3568B9942FF7EE21007DA0AB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3568B99E2FF7EE21007DA0AB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3568B9812FF7EE20007DA0AB = {
+			isa = PBXGroup;
+			children = (
+				3568B98C2FF7EE20007DA0AB /* Reassembly */,
+				3568B99A2FF7EE21007DA0AB /* ReassemblyTests */,
+				3568B9A42FF7EE21007DA0AB /* ReassemblyUITests */,
+				3568B98B2FF7EE20007DA0AB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3568B98B2FF7EE20007DA0AB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3568B98A2FF7EE20007DA0AB /* Reassembly.app */,
+				3568B9972FF7EE21007DA0AB /* ReassemblyTests.xctest */,
+				3568B9A12FF7EE21007DA0AB /* ReassemblyUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3568B9892FF7EE20007DA0AB /* Reassembly */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3568B9AB2FF7EE21007DA0AB /* Build configuration list for PBXNativeTarget "Reassembly" */;
+			buildPhases = (
+				3568B9862FF7EE20007DA0AB /* Sources */,
+				3568B9872FF7EE20007DA0AB /* Frameworks */,
+				3568B9882FF7EE20007DA0AB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				3568B98C2FF7EE20007DA0AB /* Reassembly */,
+			);
+			name = Reassembly;
+			packageProductDependencies = (
+			);
+			productName = Reassembly;
+			productReference = 3568B98A2FF7EE20007DA0AB /* Reassembly.app */;
+			productType = "com.apple.product-type.application";
+		};
+		3568B9962FF7EE21007DA0AB /* ReassemblyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3568B9AE2FF7EE21007DA0AB /* Build configuration list for PBXNativeTarget "ReassemblyTests" */;
+			buildPhases = (
+				3568B9932FF7EE21007DA0AB /* Sources */,
+				3568B9942FF7EE21007DA0AB /* Frameworks */,
+				3568B9952FF7EE21007DA0AB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3568B9992FF7EE21007DA0AB /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				3568B99A2FF7EE21007DA0AB /* ReassemblyTests */,
+			);
+			name = ReassemblyTests;
+			packageProductDependencies = (
+			);
+			productName = ReassemblyTests;
+			productReference = 3568B9972FF7EE21007DA0AB /* ReassemblyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		3568B9A02FF7EE21007DA0AB /* ReassemblyUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3568B9B12FF7EE21007DA0AB /* Build configuration list for PBXNativeTarget "ReassemblyUITests" */;
+			buildPhases = (
+				3568B99D2FF7EE21007DA0AB /* Sources */,
+				3568B99E2FF7EE21007DA0AB /* Frameworks */,
+				3568B99F2FF7EE21007DA0AB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3568B9A32FF7EE21007DA0AB /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				3568B9A42FF7EE21007DA0AB /* ReassemblyUITests */,
+			);
+			name = ReassemblyUITests;
+			packageProductDependencies = (
+			);
+			productName = ReassemblyUITests;
+			productReference = 3568B9A12FF7EE21007DA0AB /* ReassemblyUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3568B9822FF7EE20007DA0AB /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2660;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					3568B9892FF7EE20007DA0AB = {
+						CreatedOnToolsVersion = 26.6;
+					};
+					3568B9962FF7EE21007DA0AB = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = 3568B9892FF7EE20007DA0AB;
+					};
+					3568B9A02FF7EE21007DA0AB = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = 3568B9892FF7EE20007DA0AB;
+					};
+				};
+			};
+			buildConfigurationList = 3568B9852FF7EE20007DA0AB /* Build configuration list for PBXProject "Reassembly" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 3568B9812FF7EE20007DA0AB;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 3568B98B2FF7EE20007DA0AB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3568B9892FF7EE20007DA0AB /* Reassembly */,
+				3568B9962FF7EE21007DA0AB /* ReassemblyTests */,
+				3568B9A02FF7EE21007DA0AB /* ReassemblyUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3568B9882FF7EE20007DA0AB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3568B9952FF7EE21007DA0AB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3568B99F2FF7EE21007DA0AB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3568B9862FF7EE20007DA0AB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3568B9932FF7EE21007DA0AB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3568B99D2FF7EE21007DA0AB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3568B9992FF7EE21007DA0AB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3568B9892FF7EE20007DA0AB /* Reassembly */;
+			targetProxy = 3568B9982FF7EE21007DA0AB /* PBXContainerItemProxy */;
+		};
+		3568B9A32FF7EE21007DA0AB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3568B9892FF7EE20007DA0AB /* Reassembly */;
+			targetProxy = 3568B9A22FF7EE21007DA0AB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		3568B9A92FF7EE21007DA0AB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = SCP9WFJV88;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		3568B9AA2FF7EE21007DA0AB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = SCP9WFJV88;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		3568B9AC2FF7EE21007DA0AB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SCP9WFJV88;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Re-assembly";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Re-assembly gebruikt de camera om demontagefoto's te maken in je actieve project.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Re-assembly zet de locatie op je demontagefoto's, zodat je later weet waar je aan het sleutelen was.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Re-assembly bewaart je demontagefoto's in je fotobibliotheek en maakt daarvoor albums aan.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.defrog.Reassembly;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3568B9AD2FF7EE21007DA0AB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SCP9WFJV88;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Re-assembly";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Re-assembly gebruikt de camera om demontagefoto's te maken in je actieve project.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Re-assembly zet de locatie op je demontagefoto's, zodat je later weet waar je aan het sleutelen was.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Re-assembly bewaart je demontagefoto's in je fotobibliotheek en maakt daarvoor albums aan.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.defrog.Reassembly;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		3568B9AF2FF7EE21007DA0AB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SCP9WFJV88;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.defrog.ReassemblyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Reassembly.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Reassembly";
+			};
+			name = Debug;
+		};
+		3568B9B02FF7EE21007DA0AB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SCP9WFJV88;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.defrog.ReassemblyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Reassembly.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Reassembly";
+			};
+			name = Release;
+		};
+		3568B9B22FF7EE21007DA0AB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SCP9WFJV88;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.defrog.ReassemblyUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Reassembly;
+			};
+			name = Debug;
+		};
+		3568B9B32FF7EE21007DA0AB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SCP9WFJV88;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.defrog.ReassemblyUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Reassembly;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3568B9852FF7EE20007DA0AB /* Build configuration list for PBXProject "Reassembly" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3568B9A92FF7EE21007DA0AB /* Debug */,
+				3568B9AA2FF7EE21007DA0AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3568B9AB2FF7EE21007DA0AB /* Build configuration list for PBXNativeTarget "Reassembly" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3568B9AC2FF7EE21007DA0AB /* Debug */,
+				3568B9AD2FF7EE21007DA0AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3568B9AE2FF7EE21007DA0AB /* Build configuration list for PBXNativeTarget "ReassemblyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3568B9AF2FF7EE21007DA0AB /* Debug */,
+				3568B9B02FF7EE21007DA0AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3568B9B12FF7EE21007DA0AB /* Build configuration list for PBXNativeTarget "ReassemblyUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3568B9B22FF7EE21007DA0AB /* Debug */,
+				3568B9B32FF7EE21007DA0AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3568B9822FF7EE20007DA0AB /* Project object */;
+}

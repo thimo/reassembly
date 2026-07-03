@@ -1,0 +1,111 @@
+<!--
+  Re-assembly app-icoon generator.
+
+  Genereert het 1024×1024 icoon: een exploded bout-samenstelling (kop · plaat ·
+  washer · moer) op de signatuur-gradient (#E00090 → #8900D2 → #4F00FF), als
+  witte lijntekening. Full-bleed, géén squircle/schaduw ingebakken — iOS
+  maskeert zelf.
+
+  Gebruik: open dit bestand in een browser; het downloadt automatisch
+  AppIcon.png. Kopieer die naar
+  Reassembly/Reassembly/Assets.xcassets/AppIcon.appiconset/AppIcon.png.
+
+  Bijstellen: de onderdelen staan onderaan (F3-configuratie). Knoppen:
+  K (kijkhoek/foreshortening), SW (lijndikte), en per onderdeel positie/maat.
+-->
+<title>render</title>
+<body style="margin:0;background:#111">
+<canvas id="c" width="1024" height="1024" style="width:256px;height:256px"></canvas>
+<a id="dl"></a>
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const K = 0.34, SW = 2.5;
+function el(name, attrs){ const e=document.createElementNS(NS,name); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+
+function puck(g, cx, cyTop, R, h, { solid=false, holeR=0 }={}) {
+  const ry=R*K;
+  const st={fill:"none",stroke:"#fff","stroke-width":SW,"stroke-linejoin":"round","stroke-linecap":"round"};
+  const rim=`M ${cx-R} ${cyTop} L ${cx-R} ${cyTop+h} A ${R} ${ry} 0 0 0 ${cx+R} ${cyTop+h} L ${cx+R} ${cyTop}`;
+  if(solid){
+    const body=`M ${cx-R} ${cyTop} L ${cx-R} ${cyTop+h} A ${R} ${ry} 0 0 0 ${cx+R} ${cyTop+h} L ${cx+R} ${cyTop} A ${R} ${ry} 0 0 1 ${cx-R} ${cyTop} Z`;
+    g.appendChild(el("path",{d:body,fill:"#fff"}));
+    g.appendChild(el("ellipse",{cx,cy:cyTop,rx:R,ry,fill:"#fff"}));
+  } else {
+    g.appendChild(el("path",{d:rim,...st}));
+    g.appendChild(el("ellipse",{cx,cy:cyTop,rx:R,ry,...st}));
+    if(holeR) g.appendChild(el("ellipse",{cx,cy:cyTop,rx:holeR,ry:holeR*K,...st}));
+  }
+}
+function hexNut(g, cx, cyTop, R, h, holeR){
+  const st={fill:"none",stroke:"#fff","stroke-width":SW,"stroke-linejoin":"round","stroke-linecap":"round"};
+  const hp=[]; for(let i=0;i<6;i++){const a=Math.PI/180*(60*i); hp.push([cx+R*Math.cos(a),cyTop+R*K*Math.sin(a)]);}
+  const top="M "+hp.map(p=>p[0].toFixed(2)+" "+p[1].toFixed(2)).join(" L ")+" Z";
+  g.appendChild(el("path",{d:top,...st}));
+  const left=hp[3],right=hp[0],fb1=hp[2],fb2=hp[1];
+  const rim=`M ${left[0]} ${left[1]} L ${left[0]} ${left[1]+h} L ${fb1[0]} ${fb1[1]+h} L ${fb2[0]} ${fb2[1]+h} L ${right[0]} ${right[1]+h} L ${right[0]} ${right[1]}`;
+  g.appendChild(el("path",{d:rim,...st}));
+  g.appendChild(el("ellipse",{cx,cy:cyTop,rx:holeR,ry:holeR*K,...st}));
+}
+function isoPlate(g, cx, cyTop, hw, h, holeR){
+  const hh=hw*K;
+  const st={fill:"none",stroke:"#fff","stroke-width":SW,"stroke-linejoin":"round","stroke-linecap":"round"};
+  const top=`M ${cx} ${cyTop-hh} L ${cx+hw} ${cyTop} L ${cx} ${cyTop+hh} L ${cx-hw} ${cyTop} Z`;
+  const rim=`M ${cx-hw} ${cyTop} L ${cx-hw} ${cyTop+h} L ${cx} ${cyTop+hh+h} L ${cx+hw} ${cyTop+h} L ${cx+hw} ${cyTop}`;
+  g.appendChild(el("path",{d:top,...st}));
+  g.appendChild(el("path",{d:rim,...st}));
+  g.appendChild(el("ellipse",{cx,cy:cyTop,rx:holeR,ry:holeR*K,...st}));
+}
+function axis(g){ g.appendChild(el("line",{x1:50,y1:8,x2:50,y2:95,stroke:"#fff","stroke-width":2.2,"stroke-dasharray":"1.5 5.5","stroke-linecap":"round",opacity:.55})); }
+
+// Volledige 1024-icoon-SVG (full-bleed, geen squircle/geen kaartschaduw).
+const svg = el("svg",{xmlns:NS,viewBox:"0 0 100 100",width:1024,height:1024});
+const defs = el("defs",{});
+defs.innerHTML = `
+  <linearGradient id="lin" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#E00090"/>
+    <stop offset="0.55" stop-color="#8900D2"/>
+    <stop offset="1" stop-color="#4F00FF"/>
+  </linearGradient>
+  <radialGradient id="hot" cx="0.26" cy="0.20" r="0.62">
+    <stop offset="0" stop-color="#FF1AB3" stop-opacity="0.62"/>
+    <stop offset="0.58" stop-color="#FF1AB3" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="hi" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffffff" stop-opacity="0.16"/>
+    <stop offset="0.46" stop-color="#ffffff" stop-opacity="0"/>
+  </linearGradient>
+  <filter id="lift" x="-25%" y="-25%" width="150%" height="150%">
+    <feDropShadow dx="0" dy="2.2" stdDeviation="2.2" flood-color="#000" flood-opacity="0.3"/>
+  </filter>`;
+svg.appendChild(defs);
+svg.appendChild(el("rect",{x:0,y:0,width:100,height:100,fill:"url(#lin)"}));
+const hotRect = el("rect",{x:0,y:0,width:100,height:100,fill:"url(#hot)"}); hotRect.style.mixBlendMode="screen"; svg.appendChild(hotRect);
+svg.appendChild(el("rect",{x:0,y:0,width:100,height:100,fill:"url(#hi)"}));
+const g = el("g",{filter:"url(#lift)"});
+axis(g);
+// F3 — kop · plaat · washer · moer
+puck(g,50,17,11,6,{solid:true});
+isoPlate(g,50,38,24,6,7);
+puck(g,50,60,15,2.5,{holeR:6});
+hexNut(g,50,77,12,4.5,5);
+svg.appendChild(g);
+
+const svgStr = new XMLSerializer().serializeToString(svg);
+const img = new Image();
+img.onload = () => {
+  const c = document.getElementById("c");
+  const ctx = c.getContext("2d");
+  ctx.clearRect(0,0,1024,1024);
+  ctx.drawImage(img,0,0,1024,1024);
+  c.toBlob(blob => {
+    const a = document.getElementById("dl");
+    a.href = URL.createObjectURL(blob);
+    a.download = "AppIcon.png";
+    a.click();
+    document.title = "done";
+  }, "image/png");
+};
+img.onerror = () => { document.title = "error"; };
+img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgStr);
+</script>
+</body>
