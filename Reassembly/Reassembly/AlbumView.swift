@@ -19,6 +19,8 @@ struct AlbumView: View {
     @State private var showingCamera = false
     @State private var cameraUnavailable = false
     @State private var viewerIndex: ViewerState?
+    @State private var isSelecting = false
+    @State private var selection = Set<String>()
 
     private let columns = [GridItem(.adaptive(minimum: 108), spacing: 2)]
 
@@ -36,7 +38,18 @@ struct AlbumView: View {
         }
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) { cameraButton }
+        .safeAreaInset(edge: .bottom) {
+            if isSelecting { selectionBar } else { cameraButton }
+        }
+        .toolbar {
+            if !assets.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(isSelecting ? "Klaar" : "Selecteer") {
+                        withAnimation { setSelecting(!isSelecting) }
+                    }
+                }
+            }
+        }
         .task(id: store.changeToken) { reload() }
         .fullScreenCover(item: $viewerIndex) { state in
             PhotoViewer(store: store, assets: assets, index: state.index)
@@ -50,8 +63,7 @@ struct AlbumView: View {
                     Section {
                         LazyVGrid(columns: columns, spacing: 2) {
                             ForEach(group.assets, id: \.localIdentifier) { asset in
-                                Thumbnail(asset: asset)
-                                    .onTapGesture { open(asset) }
+                                cell(for: asset)
                             }
                         }
                     } header: {
@@ -86,6 +98,105 @@ struct AlbumView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text("De simulator heeft geen camera. Test op een toestel.")
+        }
+    }
+
+    // Eén grid-cel. In selectiemodus toggelt een tik de selectie; anders opent
+    // 'ie de viewer. Long-press geeft altijd een contextmenu (verwijderen /
+    // selecteren).
+    @ViewBuilder
+    private func cell(for asset: PHAsset) -> some View {
+        let thumb = Thumbnail(
+            asset: asset,
+            selecting: isSelecting,
+            selected: selection.contains(asset.localIdentifier)
+        )
+        .onTapGesture { tap(asset) }
+
+        if isSelecting {
+            thumb
+        } else {
+            thumb.contextMenu { menu(for: asset) }
+        }
+    }
+
+    @ViewBuilder
+    private func menu(for asset: PHAsset) -> some View {
+        Button(role: .destructive) {
+            deleteSingle(asset)
+        } label: {
+            Label("Verwijder foto", systemImage: "trash")
+        }
+        Button {
+            withAnimation { enterSelection(with: asset) }
+        } label: {
+            Label("Selecteer", systemImage: "checkmark.circle")
+        }
+    }
+
+    private var selectionBar: some View {
+        HStack(spacing: 16) {
+            Button(role: .destructive, action: deleteSelected) {
+                Label(
+                    selection.isEmpty ? "Verwijder" : "Verwijder (\(selection.count))",
+                    systemImage: "trash"
+                )
+                .font(.body.weight(.semibold))
+            }
+            .disabled(selection.isEmpty)
+
+            Spacer()
+
+            Button(selection.count == assets.count ? "Deselecteer alles" : "Selecteer alles") {
+                if selection.count == assets.count {
+                    selection.removeAll()
+                } else {
+                    selection = Set(assets.map(\.localIdentifier))
+                }
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 12)
+        .background(.regularMaterial)
+    }
+
+    private func tap(_ asset: PHAsset) {
+        if isSelecting {
+            let id = asset.localIdentifier
+            if selection.contains(id) { selection.remove(id) } else { selection.insert(id) }
+        } else {
+            open(asset)
+        }
+    }
+
+    private func setSelecting(_ on: Bool) {
+        isSelecting = on
+        if !on { selection.removeAll() }
+    }
+
+    private func enterSelection(with asset: PHAsset) {
+        isSelecting = true
+        selection = [asset.localIdentifier]
+    }
+
+    private func deleteSingle(_ asset: PHAsset) {
+        Task {
+            // userCancelled of andere fouten: stil laten, foto blijft staan.
+            try? await store.deleteAsset(asset)
+        }
+    }
+
+    private func deleteSelected() {
+        let toDelete = assets.filter { selection.contains($0.localIdentifier) }
+        guard !toDelete.isEmpty else { return }
+        Task {
+            do {
+                try await store.deleteAssets(toDelete)
+                withAnimation { setSelecting(false) }
+            } catch {
+                // Geannuleerd of mislukt: selectie laten staan zodat je 't
+                // opnieuw kunt proberen.
+            }
         }
     }
 
@@ -141,6 +252,8 @@ private struct ViewerState: Identifiable {
 
 private struct Thumbnail: View {
     let asset: PHAsset
+    var selecting: Bool = false
+    var selected: Bool = false
     @State private var image: UIImage?
 
     var body: some View {
@@ -154,8 +267,28 @@ private struct Thumbnail: View {
                 }
             }
             .clipped()
+            .overlay {
+                if selecting && selected {
+                    Color.accentColor.opacity(0.25)
+                }
+            }
+            .overlay(alignment: .bottomTrailing) {
+                if selecting { badge }
+            }
             .contentShape(Rectangle())
             .onAppear(perform: load)
+    }
+
+    private var badge: some View {
+        Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+            .font(.title3)
+            .symbolRenderingMode(.palette)
+            .foregroundStyle(
+                selected ? Color.white : Color.white,
+                selected ? Color.accentColor : Color.black.opacity(0.35)
+            )
+            .padding(5)
+            .shadow(radius: 2)
     }
 
     private func load() {
@@ -272,6 +405,12 @@ private struct ZoomableImage: UIViewRepresentable {
         scrollView.backgroundColor = .clear
         scrollView.contentInsetAdjustmentBehavior = .never
 
+        // Niet ingezoomd valt er niks te pannen; laat de pan-gesture dan uit
+        // staan zodat de paging-TabView de horizontale swipe ongestoord krijgt.
+        // Anders kaapt deze scrollview soms de swipe half en blijft de pager
+        // tussen twee foto's hangen. Pinch/dubbeltik-zoom staan los hiervan.
+        scrollView.panGestureRecognizer.isEnabled = false
+
         let imageView = UIImageView(image: image)
         imageView.contentMode = .scaleAspectFit
         imageView.frame = scrollView.bounds
@@ -298,6 +437,13 @@ private struct ZoomableImage: UIViewRepresentable {
         var imageView: UIImageView?
 
         func viewForZooming(in scrollView: UIScrollView) -> UIView? { imageView }
+
+        // Pan alleen toestaan zolang je ingezoomd bent; op zoomscale 1 hoort de
+        // horizontale swipe bij de pager, niet bij deze scrollview.
+        func scrollViewDidZoom(_ scrollView: UIScrollView) {
+            scrollView.panGestureRecognizer.isEnabled =
+                scrollView.zoomScale > scrollView.minimumZoomScale
+        }
 
         @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
             guard let scrollView = gesture.view as? UIScrollView else { return }

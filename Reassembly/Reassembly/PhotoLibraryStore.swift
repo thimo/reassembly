@@ -232,8 +232,15 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
     /// Verwijdert één foto uit de bibliotheek. iOS toont zelf de bevestiging;
     /// de foto belandt 30 dagen in "Recent verwijderd".
     func deleteAsset(_ asset: PHAsset) async throws {
+        try await deleteAssets([asset])
+    }
+
+    /// Verwijdert meerdere foto's in één actie — dus één systeem-bevestiging in
+    /// plaats van één per foto. Belanden 30 dagen in "Recent verwijderd".
+    func deleteAssets(_ assets: [PHAsset]) async throws {
+        guard !assets.isEmpty else { return }
         try await PHPhotoLibrary.shared().performChanges {
-            PHAssetChangeRequest.deleteAssets([asset] as NSArray)
+            PHAssetChangeRequest.deleteAssets(assets as NSArray)
         }
         changeToken &+= 1
     }
