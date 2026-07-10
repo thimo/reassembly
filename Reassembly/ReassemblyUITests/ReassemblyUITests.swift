@@ -56,17 +56,35 @@ final class ReassemblyUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Nog geen foto's"].waitForExistence(timeout: 10),
                       "Navigatiepad niet hersteld na koude herstart")
 
-        // 4. Terug naar folderniveau, dan naar root.
+        // 4. Album hernoemen via het titelmenu in de navigatiebalk.
+        let renamedAlbum = albumName + "-titel"
+        let titleMenu = app.buttons["titleMenu"]
+        XCTAssertTrue(titleMenu.waitForExistence(timeout: 5), "Titelmenu niet gevonden")
+        titleMenu.tap()
+        app.buttons["Hernoem"].tap()
+        let albumField = app.alerts["Hernoemen"].textFields.element
+        XCTAssertTrue(albumField.waitForExistence(timeout: 5))
+        albumField.clearText()
+        albumField.typeText(renamedAlbum)
+        app.alerts["Hernoemen"].buttons["Bewaar"].tap()
+
+        // 5. De titel in de balk beweegt mee.
+        let renamedTitle = app.buttons.matching(NSPredicate(
+            format: "identifier == 'titleMenu' AND label CONTAINS %@", renamedAlbum)).firstMatch
+        XCTAssertTrue(renamedTitle.waitForExistence(timeout: 5),
+                      "Albumtitel niet ververst na hernoemen via titelmenu")
+
+        // 6. Terug naar folderniveau, dan naar root.
         goBack(app)
         goBack(app)
 
-        // 5. Root toont de folder met "1 item" — de childCount-refresh.
+        // 7. Root toont de folder met "1 item" — de childCount-refresh.
         XCTAssertTrue(app.staticTexts[folderName].waitForExistence(timeout: 5),
                       "Folder niet zichtbaar op root")
         XCTAssertTrue(app.staticTexts["1 item"].waitForExistence(timeout: 5),
                       "Folder-telling niet ververst (bug: bleef 0 items)")
 
-        // 6. Hernoemen via leading swipe.
+        // 8. Hernoemen via leading swipe.
         let newName = folderName + "-hernoemd"
         app.staticTexts[folderName].swipeRight()
         app.buttons["Hernoem"].tap()
@@ -76,11 +94,11 @@ final class ReassemblyUITests: XCTestCase {
         field.typeText(newName)
         app.alerts["Hernoemen"].buttons["Bewaar"].tap()
 
-        // 7. Naam beweegt mee — de rename-refresh.
+        // 9. Naam beweegt mee — de rename-refresh.
         XCTAssertTrue(app.staticTexts[newName].waitForExistence(timeout: 5),
                       "Naam niet ververst na hernoemen")
 
-        // 8. Opruimen: verwijderen + de systeem-bevestiging bevestigen.
+        // 10. Opruimen: verwijderen + de systeem-bevestiging bevestigen.
         app.staticTexts[newName].swipeLeft()
         let deleteButton = app.buttons["Verwijder + foto's"]
         if deleteButton.waitForExistence(timeout: 5) {

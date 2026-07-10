@@ -26,5 +26,6 @@ struct TitleMenu: View {
                     .foregroundStyle(.secondary)
             }
         }
+        .accessibilityIdentifier("titleMenu")
     }
 }

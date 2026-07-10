@@ -73,7 +73,10 @@ blijven. Concreet voor Reassembly:
 - Terughoudendheid: weinig features, goed uitgevoerd; geen instellingen-wildgroei
 - Dark mode, Dynamic Type en accessibility gratis meekrijgen door native te blijven
 - NetNewsWire is open source (github.com/Ranchero-Software/NetNewsWire) —
-  bij twijfel daar spieken
+  bij twijfel daar spieken; screenshots in `docs/inspiratie-netnewswire/`
+- Voor later (nieuwe SDK): de zwevende glazen knoppen onderin NetNewsWire zijn
+  standaard iOS 26-toolbar-chrome (`.bottomBar`-placements) — onze plus- en
+  cameraknop kunnen dan meeliften in plaats van eigen overlay-styling
 
 ## Techniek
 
