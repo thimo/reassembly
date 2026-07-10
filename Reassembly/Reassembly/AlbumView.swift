@@ -200,7 +200,7 @@ struct AlbumView: View {
             Button {
                 rotate(asset)
             } label: {
-                Label("Draai 90°", systemImage: "rotate.right")
+                Label("Draai 90°", systemImage: "arrow.clockwise")
             }
         }
         Button(role: .destructive) {
@@ -434,7 +434,7 @@ private struct PhotoViewer: View {
                 Spacer()
                 if assets.indices.contains(index), assets[index].mediaType == .image {
                     Button { rotateCurrent() } label: {
-                        Image(systemName: "rotate.right.fill")
+                        Image(systemName: "arrow.clockwise.circle.fill")
                             .font(.largeTitle)
                             .foregroundStyle(.white.opacity(0.85))
                     }

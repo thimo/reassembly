@@ -10,6 +10,7 @@ import Photos
 import Observation
 import UIKit
 import CoreLocation
+import UniformTypeIdentifiers
 
 @Observable
 @MainActor
@@ -345,9 +346,20 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
             formatIdentifier: "nl.defrog.reassembly.rotate",
             formatVersion: "1",
             data: Data("cw90".utf8))
+        // Photos bepaalt per asset/apparaat welk uitvoerformaat het wil (JPEG
+        // op de simulator, HEIC voor camerafoto's op toestellen); schrijf dat
+        // formaat, anders keurt Photos de edit af (3302 invalidResource).
+        let type = output.defaultRenderedContentType ?? .jpeg
+        let renderURL = try output.renderedContentURL(for: type)
         let colorSpace = rotated.colorSpace ?? CGColorSpaceCreateDeviceRGB()
-        try CIContext().writeJPEGRepresentation(
-            of: rotated, to: output.renderedContentURL, colorSpace: colorSpace)
+        let context = CIContext()
+        if type.conforms(to: .heic) || type.conforms(to: .heif) {
+            try context.writeHEIFRepresentation(
+                of: rotated, to: renderURL, format: .RGBA8, colorSpace: colorSpace)
+        } else {
+            try context.writeJPEGRepresentation(
+                of: rotated, to: renderURL, colorSpace: colorSpace)
+        }
 
         try await PHPhotoLibrary.shared().performChanges {
             PHAssetChangeRequest(for: asset).contentEditingOutput = output
