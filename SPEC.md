@@ -63,6 +63,18 @@ systeem-bevestiging voor de foto's (niet te omzeilen, hoeft dus geen eigen
 confirm). Foto's belanden 30 dagen in "Recent verwijderd" — herstelbaar.
 Let op: assets verdwijnen library-breed, ook als ze in een ander album zitten.
 
+## Stijl
+
+Inspiratie: **NetNewsWire** — netjes en simpel door radicaal platform-native te
+blijven. Concreet voor Reassembly:
+
+- Standaard SwiftUI-controls, SF Symbols, systeemkleuren en -materialen;
+  geen custom chrome (uitzondering: de cameraknop, dé kernactie)
+- Terughoudendheid: weinig features, goed uitgevoerd; geen instellingen-wildgroei
+- Dark mode, Dynamic Type en accessibility gratis meekrijgen door native te blijven
+- NetNewsWire is open source (github.com/Ranchero-Software/NetNewsWire) —
+  bij twijfel daar spieken
+
 ## Techniek
 
 - SwiftUI, één codebase iPhone + iPad; minimum iOS 18 (ControlWidget op lock
