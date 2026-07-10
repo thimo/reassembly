@@ -335,6 +335,18 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
     func rotateCounterclockwise(_ asset: PHAsset) async throws {
         let isLive = asset.mediaSubtypes.contains(.photoLive)
 
+        // Foto's in gedeelde albums / de iCloud Gedeelde Bibliotheek mag een
+        // app niet bewerken; photosd weigert de commit dan hoe dan ook.
+        guard asset.canPerform(.content) else {
+            throw RotationError(
+                stage: "vooraf",
+                underlying: CocoaError(.featureUnsupported, userInfo: [
+                    NSLocalizedDescriptionKey:
+                        "Photos staat bewerken van deze foto niet toe " +
+                        "(gedeeld album of gedeelde bibliotheek?)",
+                ]))
+        }
+
         let input: PHContentEditingInput
         do { input = try await editingInput(for: asset) }
         catch { throw RotationError(stage: "origineel ophalen", underlying: error) }
@@ -368,15 +380,23 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         changeToken &+= 1
     }
 
-    /// Vertelt in de foutmelding wélke stap faalde plus de kale foutcode —
-    /// onmisbaar bij het debuggen op afstand via screenshots.
+    /// Vertelt in de foutmelding wélke stap faalde plus de kale foutcode én de
+    /// onderliggende foutketen — onmisbaar bij het debuggen op afstand via
+    /// screenshots.
     struct RotationError: LocalizedError {
         let stage: String
         let underlying: Error
 
         var errorDescription: String? {
-            let ns = underlying as NSError
-            return "Stap '\(stage)': \(ns.localizedDescription) [\(ns.domain) \(ns.code)]"
+            var parts: [String] = []
+            var current: NSError? = underlying as NSError
+            var depth = 0
+            while let ns = current, depth < 4 {
+                parts.append("\(ns.localizedDescription) [\(ns.domain) \(ns.code)]")
+                current = ns.userInfo[NSUnderlyingErrorKey] as? NSError
+                depth += 1
+            }
+            return "Stap '\(stage)': " + parts.joined(separator: " ← ")
         }
     }
 
