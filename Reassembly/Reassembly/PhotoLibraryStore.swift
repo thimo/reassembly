@@ -349,11 +349,12 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         // stilstaand beeld aanleveren keurt Photos af (3302 invalidResource).
         // Foto's uit de standaard Camera-app zijn Live; die van onze eigen
         // camera niet.
+        var renderInfo = "live"
         if isLive {
             do { try await renderRotatedLivePhoto(input: input, to: output) }
             catch { throw RotationError(stage: "Live Photo renderen", underlying: error) }
         } else {
-            do { try renderRotatedStill(input: input, to: output) }
+            do { renderInfo = try renderRotatedStill(input: input, to: output) }
             catch { throw RotationError(stage: "foto renderen", underlying: error) }
         }
 
@@ -362,8 +363,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
                 PHAssetChangeRequest(for: asset).contentEditingOutput = output
             }
         } catch {
-            throw RotationError(stage: isLive ? "opslaan (live)" : "opslaan (still)",
-                                underlying: error)
+            throw RotationError(stage: "opslaan (\(renderInfo))", underlying: error)
         }
         changeToken &+= 1
     }
@@ -380,11 +380,12 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         }
     }
 
-    /// Stilstaande foto: vol beeld inladen, draaien, wegschrijven in het
-    /// formaat dat Photos voor deze asset wil (JPEG op de simulator, HEIC op
-    /// toestellen).
+    /// Stilstaande foto: vol beeld inladen, draaien, wegschrijven. Photo-edits
+    /// horen klassiek als JPEG aangeleverd; alleen als JPEG niet bij de
+    /// gedragen formaten zit volgen we het voorkeursformaat van de asset.
+    /// Geeft een korte formaat/grootte-omschrijving terug voor foutmeldingen.
     private func renderRotatedStill(input: PHContentEditingInput,
-                                    to output: PHContentEditingOutput) throws {
+                                    to output: PHContentEditingOutput) throws -> String {
         guard let url = input.fullSizeImageURL,
               let original = CIImage(contentsOf: url) else {
             throw CocoaError(.fileReadCorruptFile)
@@ -392,7 +393,9 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         let upright = original.oriented(forExifOrientation: input.fullSizeImageOrientation)
         let rotated = upright.oriented(.left)
 
-        let type = output.defaultRenderedContentType ?? .jpeg
+        let type: UTType = output.supportedRenderedContentTypes.contains(.jpeg)
+            ? .jpeg
+            : (output.defaultRenderedContentType ?? .jpeg)
         let renderURL = try output.renderedContentURL(for: type)
         let colorSpace = rotated.colorSpace ?? CGColorSpaceCreateDeviceRGB()
         let context = CIContext()
@@ -403,6 +406,9 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
             try context.writeJPEGRepresentation(
                 of: rotated, to: renderURL, colorSpace: colorSpace)
         }
+        let bytes = (try? FileManager.default
+            .attributesOfItem(atPath: renderURL.path)[.size] as? NSNumber)?.intValue ?? 0
+        return "\(type.identifier), \(bytes) bytes"
     }
 
     /// Live Photo: still én gekoppelde video samen draaien via Photos' eigen
