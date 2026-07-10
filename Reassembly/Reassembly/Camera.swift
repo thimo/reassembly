@@ -179,6 +179,16 @@ struct CameraView: View {
         .task { model.start(store: store, album: album) }
         .onDisappear { model.stop() }
         .statusBarHidden()
+        // Swipe omlaag sluit de camera. Geen cancel: elke sluiterdruk is al
+        // direct in het album bewaard.
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 30).onEnded { value in
+                if value.translation.height > 80,
+                   value.translation.height > abs(value.translation.width) * 1.5 {
+                    dismiss()
+                }
+            }
+        )
     }
 
     private func shoot() {

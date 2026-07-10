@@ -412,6 +412,7 @@ private struct PhotoViewer: View {
     let assets: [PHAsset]
     @State var index: Int
     @State private var errorMessage: String?
+    @State private var manager = PHCachingImageManager()
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -419,7 +420,8 @@ private struct PhotoViewer: View {
             Color.black.ignoresSafeArea()
             TabView(selection: $index) {
                 ForEach(Array(assets.enumerated()), id: \.offset) { i, asset in
-                    FullImage(asset: asset, token: store.changeToken).tag(i)
+                    FullImage(asset: asset, token: store.changeToken, manager: manager)
+                        .tag(i)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
@@ -452,6 +454,29 @@ private struct PhotoViewer: View {
         } message: {
             Text(errorMessage ?? "")
         }
+        // Swipe omlaag sluit de viewer. simultaneousGesture: de horizontale
+        // swipe blijft van de pager.
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 30).onEnded { value in
+                if value.translation.height > 80,
+                   value.translation.height > abs(value.translation.width) * 1.5 {
+                    dismiss()
+                }
+            }
+        )
+        // Buurfoto's alvast in de cache: als een buurpagina pas tijdens de
+        // eerste swipe binnenkomt, reset die state-update de pager halverwege.
+        .onAppear { prefetch() }
+        .onChange(of: index) { prefetch() }
+    }
+
+    private func prefetch() {
+        let neighbors = assets.indices
+            .filter { abs($0 - index) <= 1 }
+            .map { assets[$0] }
+        manager.startCachingImages(
+            for: neighbors, targetSize: ViewerImaging.targetSize,
+            contentMode: .aspectFit, options: ViewerImaging.makeOptions())
     }
 
     private var errorBinding: Binding<Bool> {
@@ -487,24 +512,44 @@ private struct PhotoViewer: View {
     }
 }
 
+/// Gedeelde parameters voor viewer-afbeeldingen: aanvraag en prefetch moeten
+/// dezelfde maat/opties gebruiken, anders mist de cache.
+private enum ViewerImaging {
+    @MainActor
+    static var targetSize: CGSize {
+        let scale = UIScreen.main.scale
+        return CGSize(width: UIScreen.main.bounds.width * scale,
+                      height: UIScreen.main.bounds.height * scale)
+    }
+
+    static func makeOptions() -> PHImageRequestOptions {
+        let options = PHImageRequestOptions()
+        options.isNetworkAccessAllowed = true
+        // Opportunistic: eerst snel een (gecachete) voorvertoning, dan vol —
+        // zo staat er al beeld vóór de eerste swipe klaar.
+        options.deliveryMode = .opportunistic
+        return options
+    }
+}
+
 private struct FullImage: View {
     let asset: PHAsset
     /// Zie Thumbnail.token: verse PHAsset-instanties zijn voor SwiftUI "gelijk",
     /// dus we herladen op library-wijziging.
     let token: Int
+    let manager: PHImageManager
     @State private var image: UIImage?
 
     var body: some View {
-        Group {
-            if let image {
-                ZoomableImage(image: image)
-            } else {
-                ProgressView().tint(.white)
+        // Structuur bewust stabiel (geen spinner↔beeld-wissel): een structurele
+        // swap terwijl de eerste swipe loopt laat de pager halverwege hangen.
+        ZoomableImage(image: image)
+            .overlay {
+                if image == nil { ProgressView().tint(.white) }
             }
-        }
-        // Herladen bij verschijnen én na een bewerking; het oude beeld blijft
-        // staan tot de nieuwe versie binnen is (geen flits naar de spinner).
-        .task(id: token) { load() }
+            // Laden bij verschijnen én na een bewerking; het oude beeld blijft
+            // staan tot de nieuwe versie binnen is (geen flits naar de spinner).
+            .task(id: token) { load() }
     }
 
     private func load() {
@@ -512,14 +557,9 @@ private struct FullImage: View {
         let fresh = PHAsset
             .fetchAssets(withLocalIdentifiers: [asset.localIdentifier], options: nil)
             .firstObject ?? asset
-        let options = PHImageRequestOptions()
-        options.isNetworkAccessAllowed = true
-        options.deliveryMode = .highQualityFormat
-        let scale = UIScreen.main.scale
-        let target = CGSize(width: UIScreen.main.bounds.width * scale,
-                            height: UIScreen.main.bounds.height * scale)
-        PHImageManager.default().requestImage(
-            for: fresh, targetSize: target, contentMode: .aspectFit, options: options
+        manager.requestImage(
+            for: fresh, targetSize: ViewerImaging.targetSize,
+            contentMode: .aspectFit, options: ViewerImaging.makeOptions()
         ) { result, _ in
             if let result { self.image = result }
         }
@@ -529,7 +569,8 @@ private struct FullImage: View {
 // MARK: - Zoombare foto (pinch + dubbeltik + pan)
 
 private struct ZoomableImage: UIViewRepresentable {
-    let image: UIImage
+    /// nil zolang de foto laadt; de view zelf blijft dan gewoon staan.
+    let image: UIImage?
 
     func makeUIView(context: Context) -> UIScrollView {
         let scrollView = UIScrollView()
