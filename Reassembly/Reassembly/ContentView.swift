@@ -10,7 +10,7 @@ import SwiftUI
 import Photos
 
 struct ContentView: View {
-    @State private var store = PhotoLibraryStore()
+    let store: PhotoLibraryStore
 
     var body: some View {
         Group {
@@ -86,5 +86,5 @@ private struct PermissionGate: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(store: PhotoLibraryStore())
 }

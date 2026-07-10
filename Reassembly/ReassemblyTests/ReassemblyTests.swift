@@ -23,12 +23,16 @@ struct ReassemblyTests {
         let store = PhotoLibraryStore()
         try #require(store.hasFullAccess, "Testsimulator heeft geen Photos-toegang")
 
-        // Liggende foto (400×300) zodat de wissel meetbaar is.
+        // Liggende foto (400×300) zodat de wissel meetbaar is. Scale expliciet
+        // op 1: de renderer volgt anders de schermschaal van de simulator.
         let size = CGSize(width: 400, height: 300)
-        let data = UIGraphicsImageRenderer(size: size).jpegData(withCompressionQuality: 0.9) { ctx in
-            UIColor.systemPurple.setFill()
-            ctx.fill(CGRect(origin: .zero, size: size))
-        }
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let data = UIGraphicsImageRenderer(size: size, format: format)
+            .jpegData(withCompressionQuality: 0.9) { ctx in
+                UIColor.systemPurple.setFill()
+                ctx.fill(CGRect(origin: .zero, size: size))
+            }
 
         var id: String?
         try await PHPhotoLibrary.shared().performChanges {
@@ -39,14 +43,15 @@ struct ReassemblyTests {
         let assetID = try #require(id)
         let asset = try #require(PHAsset
             .fetchAssets(withLocalIdentifiers: [assetID], options: nil).firstObject)
-        #expect(asset.pixelWidth == 400)
-        #expect(asset.pixelHeight == 300)
+        let width = asset.pixelWidth
+        let height = asset.pixelHeight
+        #expect(width > height, "Testfoto hoort liggend te zijn")
 
         try await store.rotateClockwise(asset)
 
         let rotated = try #require(PHAsset
             .fetchAssets(withLocalIdentifiers: [assetID], options: nil).firstObject)
-        #expect(rotated.pixelWidth == 300, "Breedte niet gewisseld na rotatie")
-        #expect(rotated.pixelHeight == 400, "Hoogte niet gewisseld na rotatie")
+        #expect(rotated.pixelWidth == height, "Breedte niet gewisseld na rotatie")
+        #expect(rotated.pixelHeight == width, "Hoogte niet gewisseld na rotatie")
     }
 }

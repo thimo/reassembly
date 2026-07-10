@@ -21,6 +21,11 @@ struct AlbumView: View {
     @State private var viewerIndex: ViewerState?
     @State private var isSelecting = false
     @State private var selection = Set<String>()
+    @State private var errorMessage: String?
+    @State private var showingRename = false
+    @State private var renameText = ""
+
+    private let router = QuickActionRouter.shared
 
     private let columns = [GridItem(.adaptive(minimum: 108), spacing: 2)]
 
@@ -36,12 +41,19 @@ struct AlbumView: View {
                 grid
             }
         }
-        .navigationTitle(title)
+        .navigationTitle(currentTitle)
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
             if isSelecting { selectionBar } else { cameraButton }
         }
         .toolbar {
+            // Titel + fotoaantal, tikbaar voor hernoemen.
+            ToolbarItem(placement: .principal) {
+                TitleMenu(title: currentTitle, subtitle: countLabel) {
+                    renameText = currentTitle
+                    showingRename = true
+                }
+            }
             if !assets.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(isSelecting ? "Klaar" : "Selecteer") {
@@ -53,6 +65,71 @@ struct AlbumView: View {
         .task(id: store.changeToken) { reload() }
         .fullScreenCover(item: $viewerIndex) { state in
             PhotoViewer(store: store, assets: assets, index: state.index)
+        }
+        .alert("Er ging iets mis", isPresented: errorBinding) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
+        .alert("Hernoemen", isPresented: $showingRename) {
+            TextField("Naam", text: $renameText)
+            Button("Annuleer", role: .cancel) {}
+            Button("Bewaar") { performRename() }
+        }
+        .onAppear {
+            ActiveProject.set(id: album.localIdentifier, title: currentTitle)
+            handleCameraRequest()
+        }
+        .onChange(of: router.pending) { handleCameraRequest() }
+    }
+
+    private var errorBinding: Binding<Bool> {
+        Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )
+    }
+
+    /// Titel vers uit Photos (via changeToken), zodat hernoemen — hier of in de
+    /// Photos-app — meteen zichtbaar is.
+    private var currentTitle: String {
+        _ = store.changeToken
+        return store.project(withLocalIdentifier: album.localIdentifier)?.title ?? title
+    }
+
+    private var countLabel: String {
+        assets.count == 1 ? "1 foto" : "\(assets.count) foto's"
+    }
+
+    private func performRename() {
+        let name = renameText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return }
+        Task {
+            guard let project = store.project(withLocalIdentifier: album.localIdentifier) else { return }
+            do {
+                try await store.rename(project, to: name)
+                // Actief-project-titel meebewegen (voedt de shortcut items).
+                if ActiveProject.id == album.localIdentifier {
+                    ActiveProject.set(id: album.localIdentifier, title: name)
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    /// Quick action (shortcut item / intent): open de camera zodra dit album
+    /// het doelwit is.
+    private func handleCameraRequest() {
+        guard router.consumeCameraRequest(for: album.localIdentifier) else { return }
+        openCamera()
+    }
+
+    private func openCamera() {
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            showingCamera = true
+        } else {
+            cameraUnavailable = true
         }
     }
 
@@ -77,11 +154,7 @@ struct AlbumView: View {
 
     private var cameraButton: some View {
         Button {
-            if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                showingCamera = true
-            } else {
-                cameraUnavailable = true
-            }
+            openCamera()
         } label: {
             Image(systemName: "camera.fill")
                 .font(.title2)
@@ -108,6 +181,7 @@ struct AlbumView: View {
     private func cell(for asset: PHAsset) -> some View {
         let thumb = Thumbnail(
             asset: asset,
+            token: store.changeToken,
             selecting: isSelecting,
             selected: selection.contains(asset.localIdentifier)
         )
@@ -195,9 +269,8 @@ struct AlbumView: View {
 
     private func rotate(_ asset: PHAsset) {
         Task {
-            // Mislukt (bv. iCloud-origineel niet op te halen): foto blijft
-            // gewoon staan; stil laten.
-            try? await store.rotateClockwise(asset)
+            do { try await store.rotateClockwise(asset) }
+            catch { errorMessage = error.localizedDescription }
         }
     }
 
@@ -267,6 +340,10 @@ private struct ViewerState: Identifiable {
 
 private struct Thumbnail: View {
     let asset: PHAsset
+    /// Wisselt bij elke library-wijziging en triggert herladen. Nodig omdat
+    /// PHAsset op localIdentifier vergelijkt: een vers gefetchte instantie is
+    /// voor SwiftUI "gelijk" en zou anders geen re-render veroorzaken.
+    let token: Int
     var selecting: Bool = false
     var selected: Bool = false
     @State private var image: UIImage?
@@ -291,9 +368,9 @@ private struct Thumbnail: View {
                 if selecting { badge }
             }
             .contentShape(Rectangle())
-            // Herladen bij verschijnen én na een bewerking (rotatie verandert
-            // modificationDate). PHImageManager cachet, dus her-opvragen is goedkoop.
-            .task(id: asset.modificationDate) { load() }
+            // Herladen bij verschijnen én na elke library-wijziging (rotatie!).
+            // PHImageManager cachet, dus her-opvragen is goedkoop.
+            .task(id: token) { load() }
     }
 
     private var badge: some View {
@@ -309,6 +386,11 @@ private struct Thumbnail: View {
     }
 
     private func load() {
+        // Vers exemplaar ophalen: de meegegeven asset kan een verouderde
+        // snapshot zijn die nog de oude rendition oplevert.
+        let fresh = PHAsset
+            .fetchAssets(withLocalIdentifiers: [asset.localIdentifier], options: nil)
+            .firstObject ?? asset
         let scale = UIScreen.main.scale
         let target = CGSize(width: 216 * scale, height: 216 * scale)
         let options = PHImageRequestOptions()
@@ -316,7 +398,7 @@ private struct Thumbnail: View {
         options.deliveryMode = .opportunistic
         options.resizeMode = .fast
         PHImageManager.default().requestImage(
-            for: asset, targetSize: target, contentMode: .aspectFill, options: options
+            for: fresh, targetSize: target, contentMode: .aspectFill, options: options
         ) { result, _ in
             if let result { self.image = result }
         }
@@ -329,6 +411,7 @@ private struct PhotoViewer: View {
     let store: PhotoLibraryStore
     let assets: [PHAsset]
     @State var index: Int
+    @State private var errorMessage: String?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -336,7 +419,7 @@ private struct PhotoViewer: View {
             Color.black.ignoresSafeArea()
             TabView(selection: $index) {
                 ForEach(Array(assets.enumerated()), id: \.offset) { i, asset in
-                    FullImage(asset: asset).tag(i)
+                    FullImage(asset: asset, token: store.changeToken).tag(i)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
@@ -364,14 +447,27 @@ private struct PhotoViewer: View {
             }
             .padding()
         }
+        .alert("Draaien mislukt", isPresented: errorBinding) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
+    }
+
+    private var errorBinding: Binding<Bool> {
+        Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )
     }
 
     private func rotateCurrent() {
         guard assets.indices.contains(index) else { return }
         let asset = assets[index]
         Task {
-            // Grid en viewer verversen zelf via changeToken → modificationDate.
-            try? await store.rotateClockwise(asset)
+            // Grid en viewer verversen zelf via changeToken.
+            do { try await store.rotateClockwise(asset) }
+            catch { errorMessage = error.localizedDescription }
         }
     }
 
@@ -393,6 +489,9 @@ private struct PhotoViewer: View {
 
 private struct FullImage: View {
     let asset: PHAsset
+    /// Zie Thumbnail.token: verse PHAsset-instanties zijn voor SwiftUI "gelijk",
+    /// dus we herladen op library-wijziging.
+    let token: Int
     @State private var image: UIImage?
 
     var body: some View {
@@ -405,10 +504,14 @@ private struct FullImage: View {
         }
         // Herladen bij verschijnen én na een bewerking; het oude beeld blijft
         // staan tot de nieuwe versie binnen is (geen flits naar de spinner).
-        .task(id: asset.modificationDate) { load() }
+        .task(id: token) { load() }
     }
 
     private func load() {
+        // Vers exemplaar: de array-snapshot van de viewer kan verouderd zijn.
+        let fresh = PHAsset
+            .fetchAssets(withLocalIdentifiers: [asset.localIdentifier], options: nil)
+            .firstObject ?? asset
         let options = PHImageRequestOptions()
         options.isNetworkAccessAllowed = true
         options.deliveryMode = .highQualityFormat
@@ -416,7 +519,7 @@ private struct FullImage: View {
         let target = CGSize(width: UIScreen.main.bounds.width * scale,
                             height: UIScreen.main.bounds.height * scale)
         PHImageManager.default().requestImage(
-            for: asset, targetSize: target, contentMode: .aspectFit, options: options
+            for: fresh, targetSize: target, contentMode: .aspectFit, options: options
         ) { result, _ in
             if let result { self.image = result }
         }

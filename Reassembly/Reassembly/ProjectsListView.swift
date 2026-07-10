@@ -18,6 +18,8 @@ struct ProjectsListView: View {
     @State private var path: [Project] = []
     @State private var restored = false
 
+    private let router = QuickActionRouter.shared
+
     /// UserDefaults-sleutel: de localIdentifiers van het open pad, root → diepst.
     private static let pathKey = "navigationPath"
 
@@ -39,11 +41,14 @@ struct ProjectsListView: View {
             guard restored else { return }
             UserDefaults.standard.set(path.map(\.id), forKey: Self.pathKey)
         }
+        // Quick action (shortcut item / intent) terwijl de app al draait.
+        .onChange(of: router.pending) { navigateToQuickAction() }
     }
 
     /// Herstelt het navigatiepad van de vorige sessie, ook na force-quit.
     /// Onvindbare items (buitenom verwijderd in Photos) kappen het pad af;
-    /// je landt dan op het diepste niveau dat nog bestaat.
+    /// je landt dan op het diepste niveau dat nog bestaat. Een quick action
+    /// (koude start vanaf een shortcut item) wint van het bewaarde pad.
     private func restore() {
         guard !restored else { return }
         restored = true
@@ -51,6 +56,7 @@ struct ProjectsListView: View {
             UserDefaults.standard.removeObject(forKey: Self.pathKey)
             return
         }
+        if navigateToQuickAction() { return }
         let ids = UserDefaults.standard.stringArray(forKey: Self.pathKey) ?? []
         var result: [Project] = []
         for id in ids {
@@ -58,6 +64,18 @@ struct ProjectsListView: View {
             result.append(project)
         }
         path = result
+    }
+
+    /// Navigeert naar het album van een openstaande quick action. De camera-
+    /// vraag blijft in de router staan; de AlbumView consumeert die zodra 'ie
+    /// verschijnt.
+    @discardableResult
+    private func navigateToQuickAction() -> Bool {
+        guard let request = router.pending,
+              let target = store.path(toAlbumWithIdentifier: request.albumID)
+        else { return false }
+        path = target
+        return true
     }
 }
 
@@ -88,7 +106,8 @@ private struct ProjectsLevel: View {
         // changeToken echt gebruiken (geen dead-code-eliminatie): forceert een
         // verse render — en dus verse tellingen — bij elke library-wijziging.
         .id(store.changeToken)
-        .navigationTitle(title)
+        .navigationTitle(currentTitle)
+        .navigationBarTitleDisplayMode(parent == nil ? .large : .inline)
         .safeAreaInset(edge: .bottom) {
             if parent == nil {   // alleen op de voorpagina
                 Text("Re-assembly is the reverse of disassembly.")
@@ -101,17 +120,19 @@ private struct ProjectsLevel: View {
                     .padding(.vertical, 8)
             }
         }
+        // Toevoegen rechtsonder, in duimbereik — zelfde plek als de cameraknop
+        // in een album.
+        .overlay(alignment: .bottomTrailing) {
+            addButton
+        }
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button("Nieuw album", systemImage: "photo.stack") {
-                        newName = ""; showingNewAlbum = true
+            if parent != nil {
+                // Foldertitel + itemtelling, tikbaar voor hernoemen — zelfde
+                // patroon als de albumtitel.
+                ToolbarItem(placement: .principal) {
+                    TitleMenu(title: currentTitle, subtitle: itemsLabel) {
+                        startRenameParent()
                     }
-                    Button("Nieuwe folder", systemImage: "folder") {
-                        newName = ""; showingNewFolder = true
-                    }
-                } label: {
-                    Label("Toevoegen", systemImage: "plus")
                 }
             }
         }
@@ -139,6 +160,46 @@ private struct ProjectsLevel: View {
             Button("Annuleer", role: .cancel) {}
             Button("Bewaar") { performRename() }
         }
+    }
+
+    private var addButton: some View {
+        Menu {
+            Button("Nieuw album", systemImage: "photo.stack") {
+                newName = ""; showingNewAlbum = true
+            }
+            Button("Nieuwe folder", systemImage: "folder") {
+                newName = ""; showingNewFolder = true
+            }
+        } label: {
+            Image(systemName: "plus")
+                .font(.title2)
+                .foregroundStyle(.white)
+                .frame(width: 56, height: 56)
+                .background(Circle().fill(Color.accentColor))
+                .shadow(radius: 8, y: 4)
+        }
+        .accessibilityLabel("Toevoegen")
+        .padding(.trailing, 20)
+        .padding(.bottom, 10)
+    }
+
+    /// Titel vers uit Photos (via changeToken): hernoemen is meteen zichtbaar.
+    private var currentTitle: String {
+        _ = store.changeToken
+        guard let parent else { return title }
+        return store.project(withLocalIdentifier: parent.localIdentifier)?.title ?? title
+    }
+
+    private var itemsLabel: String {
+        children.count == 1 ? "1 item" : "\(children.count) items"
+    }
+
+    private func startRenameParent() {
+        guard let parent,
+              let project = store.project(withLocalIdentifier: parent.localIdentifier)
+        else { return }
+        renameText = project.title
+        renaming = project
     }
 
     private var list: some View {

@@ -42,17 +42,19 @@ weggooien) werkt dus ook vanuit de Photos-app.
 ### Quick actions
 
 Doel: camera in het actieve project zonder door de app te navigeren.
+"Actief project" = het laatst geopende album (UserDefaults, per device).
 
 - **Icoon long-press** (`UIApplicationShortcutItem`): "Foto in <actief project>"
-  + dynamisch de 2-3 recentste projecten
-- **App Intent + ControlWidget** "Maak foto in actief project" — één
-  implementatie, meteen bruikbaar op meerdere plekken: Control Center,
-  de vervangbare lock-screen-knoppen (waar standaard de Camera-app zit —
-  sinds iOS 18 mag daar een eigen control), Action Button en Shortcuts/Siri
+  + dynamisch de 2-3 recentste projecten — ✅ gebouwd (QuickActions.swift)
+- **App Intent** "Maak foto in actief project" — ✅ gebouwd; werkt via
+  Shortcuts, Siri en de Action Button
+- **ControlWidget** op dezelfde intent (Control Center + de vervangbare
+  lock-screen-knoppen, sinds iOS 18) — wacht op een Widget Extension-target
+  (Thimo, in Xcode: File → New → Target); de intent ligt klaar
 - **LockedCameraCapture** (iOS 18): fotograferen vanaf het lock screen zónder
   eerst te ontgrendelen — nodig om die lock-screen-knop echt goed te maken;
   opslaan naar het album kan pas na unlock, dus buffer + afhandelen bij
-  eerstvolgende ontgrendeling
+  eerstvolgende ontgrendeling — wacht eveneens op een extension-target
 
 Projecten hebben een **delete all**: album + alle foto's in één actie.
 Eén `performChanges`-blok met `PHAssetChangeRequest.deleteAssets` +
@@ -98,5 +100,5 @@ werkplaats-device. Eigen opslag + CloudKit-sync is daarmee definitief van tafel.
 
 - Spelling op homescreen: "Reassembly" of "Re-Assembly"
 - Naam reserveren in App Store Connect
-- Xcode-project aanmaken (nog niet gedaan)
-- Icon
+- Widget Extension-target (ControlWidget) en LockedCameraCapture-extension
+  aanmaken in Xcode — daarna kan de code erin

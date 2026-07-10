@@ -72,6 +72,53 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         return nil
     }
 
+    /// De recentst gebruikte albums, waar ook in de boom — voor de dynamische
+    /// shortcut items op het app-icoon.
+    func recentAlbums(limit: Int) -> [Project] {
+        guard hasFullAccess, let root = findRootFolder() else { return [] }
+        return Array(
+            collectAlbums(in: root)
+                .sorted { ($0.lastActivity ?? .distantPast) > ($1.lastActivity ?? .distantPast) }
+                .prefix(limit)
+        )
+    }
+
+    private func collectAlbums(in folder: PHCollectionList) -> [Project] {
+        var result: [Project] = []
+        PHCollection.fetchCollections(in: folder, options: nil)
+            .enumerateObjects { collection, _, _ in
+                if let album = collection as? PHAssetCollection {
+                    result.append(self.makeProject(album: album))
+                } else if let list = collection as? PHCollectionList {
+                    result.append(contentsOf: self.collectAlbums(in: list))
+                }
+            }
+        return result
+    }
+
+    /// Navigatiepad (root → album) naar een album, voor quick actions. Loopt
+    /// omhoog langs de parent-folders tot aan de root; nil als het album niet
+    /// (meer) bestaat.
+    func path(toAlbumWithIdentifier id: String) -> [Project]? {
+        guard hasFullAccess,
+              let album = PHAssetCollection
+                  .fetchAssetCollections(withLocalIdentifiers: [id], options: nil)
+                  .firstObject
+        else { return nil }
+
+        var chain: [Project] = [makeProject(album: album)]
+        let rootID = findRootFolder()?.localIdentifier
+        var current: PHCollection = album
+        while let parent = PHCollectionList
+            .fetchCollectionListsContaining(current, options: nil)
+            .firstObject {
+            if parent.localIdentifier == rootID { break }
+            chain.insert(makeProject(folder: parent), at: 0)
+            current = parent
+        }
+        return chain
+    }
+
     private func findRootFolder() -> PHCollectionList? {
         let options = PHFetchOptions()
         options.predicate = NSPredicate(format: "localizedTitle == %@", Self.rootFolderName)
