@@ -427,44 +427,28 @@ private struct PhotoViewer: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea()
 
-            // Acties in bubbles, zoals Photos: X los in een rondje, rotate
-            // (outline-glyph, zoals Apple's eigen) en prullenbak samen in één
-            // capsule.
+            // Acties in bubbles, zoals Photos: X linksboven, rotate (outline-
+            // glyph, zoals Apple's eigen) rechtsboven.
             HStack {
-                Button { dismiss() } label: {
-                    Image(systemName: "xmark")
-                        .font(.body.weight(.semibold))
-                        .frame(width: 44, height: 44)
-                }
-                .background(.regularMaterial, in: Circle())
-
+                bubbleButton("xmark") { dismiss() }
                 Spacer()
-
-                HStack(spacing: 0) {
-                    if assets.indices.contains(index), assets[index].mediaType == .image {
-                        Button { rotateCurrent() } label: {
-                            Image(systemName: "rotate.left")
-                                .font(.body.weight(.semibold))
-                                .frame(width: 44, height: 44)
-                        }
-                    }
-                    Button { deleteCurrent() } label: {
-                        Image(systemName: "trash")
-                            .font(.body.weight(.semibold))
-                            .frame(width: 44, height: 44)
-                    }
+                if assets.indices.contains(index), assets[index].mediaType == .image {
+                    bubbleButton("rotate.left") { rotateCurrent() }
                 }
-                .background(.regularMaterial, in: Capsule())
             }
-            .foregroundStyle(.white)
-            // Zwarte viewer = donkere bubbles, ongeacht het systeemthema.
-            .environment(\.colorScheme, .dark)
             .padding()
         }
         .alert("Draaien mislukt", isPresented: errorBinding) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorMessage ?? "")
+        }
+        // Prullenbak geïsoleerd rechtsonder, zoals Photos: ruimtelijke afstand
+        // tot de bewerk-acties voorkomt mistikken; de systeembevestiging bij
+        // verwijderen blijft als tweede slot.
+        .overlay(alignment: .bottomTrailing) {
+            bubbleButton("trash") { deleteCurrent() }
+                .padding()
         }
         // Swipe omlaag sluit de viewer. simultaneousGesture: de horizontale
         // swipe blijft van de pager.
@@ -480,6 +464,19 @@ private struct PhotoViewer: View {
         // eerste swipe binnenkomt, reset die state-update de pager halverwege.
         .onAppear { prefetch() }
         .onChange(of: index) { prefetch() }
+    }
+
+    /// Actieknop in een glasbubble, in de donkere smaak van de zwarte viewer —
+    /// ongeacht het systeemthema.
+    private func bubbleButton(_ systemName: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.body.weight(.semibold))
+                .frame(width: 44, height: 44)
+        }
+        .background(.regularMaterial, in: Circle())
+        .foregroundStyle(.white)
+        .environment(\.colorScheme, .dark)
     }
 
     private func prefetch() {
