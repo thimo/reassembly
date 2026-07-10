@@ -108,18 +108,6 @@ private struct ProjectsLevel: View {
         .id(store.changeToken)
         .navigationTitle(currentTitle)
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
-            if parent == nil {   // alleen op de voorpagina
-                Text("Re-assembly is the reverse of disassembly.")
-                    .multilineTextAlignment(.center)
-                    .font(.footnote)
-                    .italic()
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 8)
-            }
-        }
         .toolbar {
             if parent != nil {
                 // Foldertitel + itemtelling, tikbaar voor hernoemen — zelfde
@@ -231,6 +219,21 @@ private struct ProjectsLevel: View {
                         Label("Rename", systemImage: "pencil")
                     }
                     .tint(.blue)
+                }
+            }
+
+            // Tagline direct onder de lijst (alleen op de voorpagina), los van
+            // de kaart en met eigen witruimte; scrolt mee met de inhoud.
+            if parent == nil {
+                Section {
+                    Text("Re-assembly is the reverse of disassembly.")
+                        .font(.footnote)
+                        .italic()
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                 }
             }
         }
