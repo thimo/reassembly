@@ -120,11 +120,6 @@ private struct ProjectsLevel: View {
                     .padding(.vertical, 8)
             }
         }
-        // Toevoegen rechtsonder, in duimbereik — zelfde plek als de cameraknop
-        // in een album.
-        .overlay(alignment: .bottomTrailing) {
-            addButton
-        }
         .toolbar {
             if parent != nil {
                 // Foldertitel + itemtelling, tikbaar voor hernoemen — zelfde
@@ -134,6 +129,15 @@ private struct ProjectsLevel: View {
                         startRenameParent()
                     }
                 }
+            }
+            // Toevoegen rechtsonder als gewone toolbar-knop: het systeem
+            // bepaalt het uiterlijk (op iOS 26 het glazen rondje, zie
+            // docs/inspiratie-netnewswire) — geen eigen styling.
+            ToolbarItem(placement: .bottomBar) {
+                Spacer()
+            }
+            ToolbarItem(placement: .bottomBar) {
+                addButton
             }
         }
         .alert("Nieuw album", isPresented: $showingNewAlbum) {
@@ -171,16 +175,8 @@ private struct ProjectsLevel: View {
                 newName = ""; showingNewFolder = true
             }
         } label: {
-            Image(systemName: "plus")
-                .font(.title2)
-                .foregroundStyle(.white)
-                .frame(width: 56, height: 56)
-                .background(Circle().fill(Color.accentColor))
-                .shadow(radius: 8, y: 4)
+            Label("Toevoegen", systemImage: "plus")
         }
-        .accessibilityLabel("Toevoegen")
-        .padding(.trailing, 20)
-        .padding(.bottom, 10)
     }
 
     /// Titel vers uit Photos (via changeToken): hernoemen is meteen zichtbaar.
