@@ -256,6 +256,9 @@ private struct ProjectsLevel: View {
                     .controlSize(.large)
                 Button("New Folder") { newName = ""; showingNewFolder = true }
                     .controlSize(.large)
+                    // De grote controlSize geeft beide knoppen extra padding;
+                    // dat stapelt tussen de twee op. Ietsje terugtrekken.
+                    .padding(.top, -6)
             }
             .fixedSize(horizontal: false, vertical: true)
             Spacer()
@@ -346,10 +349,15 @@ private struct ProjectRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: project.isFolder ? "folder" : "photo.stack")
-                .font(.title2)
-                .foregroundStyle(.tint)
-                .frame(width: 32)
+            if project.isFolder {
+                Image(systemName: "folder")
+                    .font(.title2)
+                    .foregroundStyle(.tint)
+                    .frame(width: 52, height: 52)
+            } else {
+                AlbumStack(assets: project.coverAssets)
+                    .frame(width: 52, height: 52)
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(project.title)
@@ -370,9 +378,96 @@ private struct ProjectRow: View {
                   let albums = project.albumCount else { return nil }
             return Project.contentsLabel(folders: folders, albums: albums)
         }
+        return albumSubtitle
+    }
+
+    private var albumSubtitle: String? {
         guard let count = project.assetCount else { return nil }
         let photos = count == 1 ? String(localized: "1 photo") : String(localized: "\(count) photos")
         guard let last = project.lastActivity else { return photos }
         return "\(photos) · \(last.formatted(.relative(presentation: .named)))"
+    }
+}
+
+/// Mini-fotostapel voor een albumrij: nieuwste foto recht bovenop, de één à
+/// twee daarvoor er schuin achter. Leeg album → placeholder-symbool.
+private struct AlbumStack: View {
+    /// Nieuwste eerst (max 3).
+    let assets: [PHAsset]
+
+    var body: some View {
+        ZStack {
+            if assets.isEmpty {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(.secondarySystemBackground))
+                Image(systemName: "photo.stack")
+                    .foregroundStyle(.tint)
+            } else {
+                // Achterste eerst de ZStack in; index 0 (nieuwste) komt bovenop.
+                // Kaarten iets kleiner dan het vak en de achterste twee omhoog
+                // geschoven + gedraaid, zodat ze zichtbaar uitsteken — enkel
+                // rotatie verdwijnt achter de afgeronde hoeken van de bovenste.
+                ForEach(Array(assets.enumerated().reversed()),
+                        id: \.element.localIdentifier) { index, asset in
+                    RowThumb(asset: asset)
+                        .frame(width: 44, height: 44)
+                        .rotationEffect(.degrees(rotation(for: index)))
+                        .offset(offset(for: index))
+                }
+            }
+        }
+    }
+
+    private func rotation(for index: Int) -> Double {
+        switch index {
+        case 1: -9
+        case 2: 8
+        default: 0
+        }
+    }
+
+    private func offset(for index: Int) -> CGSize {
+        switch index {
+        case 1: CGSize(width: -2, height: -4)
+        case 2: CGSize(width: 3, height: -6)
+        default: CGSize(width: 0, height: 4)
+        }
+    }
+}
+
+private struct RowThumb: View {
+    let asset: PHAsset
+    @State private var image: UIImage?
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(Color(.secondarySystemBackground))
+            .overlay {
+                if let image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            // Randje in de achtergrondkleur zodat de lagen zich aftekenen.
+            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(.background, lineWidth: 1.5))
+            // Het hele niveau krijgt .id(changeToken), dus deze view wordt bij
+            // elke library-wijziging opnieuw opgebouwd — verse lading volstaat.
+            .task { load() }
+    }
+
+    private func load() {
+        let scale = UIScreen.main.scale
+        let target = CGSize(width: 104 * scale, height: 104 * scale)
+        let options = PHImageRequestOptions()
+        options.isNetworkAccessAllowed = true
+        options.deliveryMode = .opportunistic
+        options.resizeMode = .fast
+        PHImageManager.default().requestImage(
+            for: asset, targetSize: target, contentMode: .aspectFill, options: options
+        ) { result, _ in
+            if let result { self.image = result }
+        }
     }
 }

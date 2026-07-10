@@ -147,12 +147,21 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
 
     private func makeProject(album: PHAssetCollection) -> Project {
         let count = PHAsset.fetchAssets(in: album, options: nil).count
+        // Nieuwste drie in één fetch: bovenste = cover, en z'n datum is meteen
+        // de "laatste activiteit".
+        let opts = PHFetchOptions()
+        opts.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+        opts.fetchLimit = 3
+        var covers: [PHAsset] = []
+        PHAsset.fetchAssets(in: album, options: opts)
+            .enumerateObjects { asset, _, _ in covers.append(asset) }
         return Project(
             id: album.localIdentifier,
             title: album.localizedTitle ?? String(localized: "Untitled Album"),
             kind: .album(album),
             assetCount: count,
-            lastActivity: newestAssetDate(in: album),
+            coverAssets: covers,
+            lastActivity: covers.first?.creationDate,
             firstActivity: oldestAssetDate(in: album)
         )
     }

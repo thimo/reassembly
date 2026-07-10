@@ -123,7 +123,11 @@ final class ReassemblyUITests: XCTestCase {
 
     @MainActor
     private func createItem(_ app: XCUIApplication, buttonLabel: String, name: String) {
-        // Lege-staat-knop (geen "+"-menu openen → geen dubbele match).
+        // Lege staat heeft directe knoppen; anders (bibliotheek niet leeg,
+        // bv. door testresten) via het plus-menu onderin.
+        if !app.buttons[buttonLabel].firstMatch.waitForExistence(timeout: 2) {
+            app.buttons["Add"].tap()
+        }
         let button = app.buttons[buttonLabel].firstMatch
         XCTAssertTrue(button.waitForExistence(timeout: 5), "Knop \(buttonLabel) niet gevonden")
         button.tap()

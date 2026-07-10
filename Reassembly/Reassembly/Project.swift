@@ -23,6 +23,9 @@ struct Project: Identifiable {
 
     /// Aantal foto's (nil voor folders).
     let assetCount: Int?
+    /// Nieuwste foto's (max 3, nieuwste eerst) voor de stapel in de lijst;
+    /// leeg voor folders en lege albums.
+    var coverAssets: [PHAsset] = []
     /// Aantal subfolders resp. albums direct hieronder (nil voor albums).
     var folderCount: Int? = nil
     var albumCount: Int? = nil
