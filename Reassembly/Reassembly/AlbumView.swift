@@ -471,7 +471,7 @@ private struct PhotoViewer: View {
     private func bubbleButton(_ systemName: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.body.weight(.semibold))
+                .font(.title3.weight(.semibold))
                 .frame(width: 44, height: 44)
         }
         .background(.regularMaterial, in: Circle())
