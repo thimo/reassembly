@@ -31,7 +31,7 @@ final class ReassemblyUITests: XCTestCase {
         app.launch()
         grantPhotosIfNeeded(app)
 
-        let addButton = app.buttons["Toevoegen"]
+        let addButton = app.buttons["Add"]
         XCTAssertTrue(addButton.waitForExistence(timeout: 15),
                       "Projectenlijst niet geladen — Photos-toegang niet verkregen?")
 
@@ -40,20 +40,20 @@ final class ReassemblyUITests: XCTestCase {
         let albumName = "UITestProject-\(suffix)"
 
         // 1. Folder aanmaken via de lege-staat-knop → opent automatisch.
-        createItem(app, buttonLabel: "Nieuwe folder", name: folderName)
-        XCTAssertTrue(app.staticTexts["Lege folder"].waitForExistence(timeout: 5),
+        createItem(app, buttonLabel: "New Folder", name: folderName)
+        XCTAssertTrue(app.staticTexts["Empty Folder"].waitForExistence(timeout: 5),
                       "Nieuwe folder opende niet automatisch")
 
         // 2. Album erin aanmaken → opent automatisch (AlbumView).
-        createItem(app, buttonLabel: "Nieuw album", name: albumName)
-        XCTAssertTrue(app.staticTexts["Nog geen foto's"].waitForExistence(timeout: 5),
+        createItem(app, buttonLabel: "New Album", name: albumName)
+        XCTAssertTrue(app.staticTexts["No Photos Yet"].waitForExistence(timeout: 5),
                       "Nieuw album opende niet automatisch")
 
         // 3. Herstel: app killen en koud herstarten → zelfde album weer open.
         app.terminate()
         app.launchArguments = []   // géén reset-vlag: nu moet herstel juist werken
         app.launch()
-        XCTAssertTrue(app.staticTexts["Nog geen foto's"].waitForExistence(timeout: 10),
+        XCTAssertTrue(app.staticTexts["No Photos Yet"].waitForExistence(timeout: 10),
                       "Navigatiepad niet hersteld na koude herstart")
 
         // 4. Album hernoemen via het titelmenu in de navigatiebalk.
@@ -61,12 +61,12 @@ final class ReassemblyUITests: XCTestCase {
         let titleMenu = app.buttons["titleMenu"]
         XCTAssertTrue(titleMenu.waitForExistence(timeout: 5), "Titelmenu niet gevonden")
         titleMenu.tap()
-        app.buttons["Hernoem"].tap()
-        let albumField = app.alerts["Hernoemen"].textFields.element
+        app.buttons["Rename"].tap()
+        let albumField = app.alerts["Rename"].textFields.element
         XCTAssertTrue(albumField.waitForExistence(timeout: 5))
         albumField.clearText()
         albumField.typeText(renamedAlbum)
-        app.alerts["Hernoemen"].buttons["Bewaar"].tap()
+        app.alerts["Rename"].buttons["Save"].tap()
 
         // 5. De titel in de balk beweegt mee.
         let renamedTitle = app.buttons.matching(NSPredicate(
@@ -87,12 +87,12 @@ final class ReassemblyUITests: XCTestCase {
         // 8. Hernoemen via leading swipe.
         let newName = folderName + "-hernoemd"
         app.staticTexts[folderName].swipeRight()
-        app.buttons["Hernoem"].tap()
-        let field = app.alerts["Hernoemen"].textFields.element
+        app.buttons["Rename"].tap()
+        let field = app.alerts["Rename"].textFields.element
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.clearText()
         field.typeText(newName)
-        app.alerts["Hernoemen"].buttons["Bewaar"].tap()
+        app.alerts["Rename"].buttons["Save"].tap()
 
         // 9. Naam beweegt mee — de rename-refresh.
         XCTAssertTrue(app.staticTexts[newName].waitForExistence(timeout: 5),
@@ -100,7 +100,7 @@ final class ReassemblyUITests: XCTestCase {
 
         // 10. Opruimen: verwijderen + de systeem-bevestiging bevestigen.
         app.staticTexts[newName].swipeLeft()
-        let deleteButton = app.buttons["Verwijder + foto's"]
+        let deleteButton = app.buttons["Delete + Photos"]
         if deleteButton.waitForExistence(timeout: 5) {
             deleteButton.tap()
         }
@@ -131,21 +131,21 @@ final class ReassemblyUITests: XCTestCase {
         XCTAssertTrue(field.waitForExistence(timeout: 5), "Naam-veld niet gevonden")
         field.tap()
         field.typeText(name)
-        app.alerts.buttons["Maak aan"].tap()
+        app.alerts.buttons["Create"].tap()
     }
 
     @MainActor
     private func grantPhotosIfNeeded(_ app: XCUIApplication) {
         // Op een verse (kloon)simulator is Photos notDetermined: gate → dialoog.
-        let grant = app.buttons["Geef toegang"]
+        let grant = app.buttons["Allow Access"]
         guard grant.waitForExistence(timeout: 10) else { return }
         grant.tap()
 
         // Dialoog afhandelen: springboard-knop direct tikken, en anders de app
         // aantikken om de interruption monitor te laten vuren. Blijven proberen
-        // tot de lijst ("Toevoegen") verschijnt.
+        // tot de lijst ("Add") verschijnt.
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        let toevoegen = app.buttons["Toevoegen"]
+        let toevoegen = app.buttons["Add"]
         let deadline = Date().addingTimeInterval(15)
         while Date() < deadline {
             if toevoegen.exists { return }

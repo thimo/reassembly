@@ -33,9 +33,9 @@ struct AlbumView: View {
         Group {
             if assets.isEmpty {
                 ContentUnavailableView {
-                    Label("Nog geen foto's", systemImage: "camera")
+                    Label("No Photos Yet", systemImage: "camera")
                 } description: {
-                    Text("Tik op de cameraknop om je eerste demontagefoto te maken.")
+                    Text("Tap the camera button to take your first teardown photo.")
                 }
             } else {
                 grid
@@ -56,7 +56,7 @@ struct AlbumView: View {
             }
             if !assets.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(isSelecting ? "Klaar" : "Selecteer") {
+                    Button(isSelecting ? "Done" : "Select") {
                         withAnimation { setSelecting(!isSelecting) }
                     }
                 }
@@ -66,15 +66,15 @@ struct AlbumView: View {
         .fullScreenCover(item: $viewerIndex) { state in
             PhotoViewer(store: store, assets: assets, index: state.index)
         }
-        .alert("Er ging iets mis", isPresented: errorBinding) {
+        .alert("Something Went Wrong", isPresented: errorBinding) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorMessage ?? "")
         }
-        .alert("Hernoemen", isPresented: $showingRename) {
-            TextField("Naam", text: $renameText)
-            Button("Annuleer", role: .cancel) {}
-            Button("Bewaar") { performRename() }
+        .alert("Rename", isPresented: $showingRename) {
+            TextField("Name", text: $renameText)
+            Button("Cancel", role: .cancel) {}
+            Button("Save") { performRename() }
         }
         .onAppear {
             ActiveProject.set(id: album.localIdentifier, title: currentTitle)
@@ -98,7 +98,9 @@ struct AlbumView: View {
     }
 
     private var countLabel: String {
-        assets.count == 1 ? "1 foto" : "\(assets.count) foto's"
+        assets.count == 1
+            ? String(localized: "1 photo")
+            : String(localized: "\(assets.count) photos")
     }
 
     private func performRename() {
@@ -167,10 +169,10 @@ struct AlbumView: View {
         .fullScreenCover(isPresented: $showingCamera) {
             CameraView(store: store, album: album, title: title)
         }
-        .alert("Camera niet beschikbaar", isPresented: $cameraUnavailable) {
+        .alert("Camera Unavailable", isPresented: $cameraUnavailable) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("De simulator heeft geen camera. Test op een toestel.")
+            Text("The simulator has no camera. Test on a device.")
         }
     }
 
@@ -200,18 +202,18 @@ struct AlbumView: View {
             Button {
                 rotate(asset)
             } label: {
-                Label("Draai 90°", systemImage: "rotate.left")
+                Label("Rotate 90°", systemImage: "rotate.left")
             }
         }
         Button(role: .destructive) {
             deleteSingle(asset)
         } label: {
-            Label("Verwijder foto", systemImage: "trash")
+            Label("Delete Photo", systemImage: "trash")
         }
         Button {
             withAnimation { enterSelection(with: asset) }
         } label: {
-            Label("Selecteer", systemImage: "checkmark.circle")
+            Label("Select", systemImage: "checkmark.circle")
         }
     }
 
@@ -219,7 +221,7 @@ struct AlbumView: View {
         HStack(spacing: 16) {
             Button(role: .destructive, action: deleteSelected) {
                 Label(
-                    selection.isEmpty ? "Verwijder" : "Verwijder (\(selection.count))",
+                    selection.isEmpty ? "Delete" : "Delete (\(selection.count))",
                     systemImage: "trash"
                 )
                 .font(.body.weight(.semibold))
@@ -228,7 +230,7 @@ struct AlbumView: View {
 
             Spacer()
 
-            Button(selection.count == assets.count ? "Deselecteer alles" : "Selecteer alles") {
+            Button(selection.count == assets.count ? "Deselect All" : "Select All") {
                 if selection.count == assets.count {
                     selection.removeAll()
                 } else {
@@ -310,8 +312,8 @@ struct AlbumView: View {
 
     private func headerTitle(_ day: Date) -> String {
         let calendar = Calendar.current
-        if calendar.isDateInToday(day) { return "Vandaag" }
-        if calendar.isDateInYesterday(day) { return "Gisteren" }
+        if calendar.isDateInToday(day) { return String(localized: "Today") }
+        if calendar.isDateInYesterday(day) { return String(localized: "Yesterday") }
         return day.formatted(.dateTime.day().month(.wide).year())
     }
 
@@ -438,7 +440,7 @@ private struct PhotoViewer: View {
             }
             .padding()
         }
-        .alert("Draaien mislukt", isPresented: errorBinding) {
+        .alert("Rotation Failed", isPresented: errorBinding) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorMessage ?? "")

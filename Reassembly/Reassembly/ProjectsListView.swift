@@ -107,7 +107,7 @@ private struct ProjectsLevel: View {
         // verse render — en dus verse tellingen — bij elke library-wijziging.
         .id(store.changeToken)
         .navigationTitle(currentTitle)
-        .navigationBarTitleDisplayMode(parent == nil ? .large : .inline)
+        .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
             if parent == nil {   // alleen op de voorpagina
                 Text("Re-assembly is the reverse of disassembly.")
@@ -129,6 +129,13 @@ private struct ProjectsLevel: View {
                         startRenameParent()
                     }
                 }
+            } else {
+                // Appnaam gecentreerd in de balk, op tussenmaat: kleiner dan
+                // een large title, nadrukkelijker dan een gewone inline-titel.
+                ToolbarItem(placement: .principal) {
+                    Text(verbatim: "Re-assembly")
+                        .font(.title2.bold())
+                }
             }
             // Toevoegen rechtsonder als gewone toolbar-knop: het systeem
             // bepaalt het uiterlijk (op iOS 26 het glazen rondje, zie
@@ -140,42 +147,42 @@ private struct ProjectsLevel: View {
                 addButton
             }
         }
-        .alert("Nieuw album", isPresented: $showingNewAlbum) {
-            TextField("Naam", text: $newName)
-            Button("Annuleer", role: .cancel) {}
-            Button("Maak aan") { create(.album) }
+        .alert("New Album", isPresented: $showingNewAlbum) {
+            TextField("Name", text: $newName)
+            Button("Cancel", role: .cancel) {}
+            Button("Create") { create(.album) }
         } message: {
-            Text("Er wordt een album met deze naam in Photos aangemaakt.")
+            Text("This creates an album with this name in Photos.")
         }
-        .alert("Nieuwe folder", isPresented: $showingNewFolder) {
-            TextField("Naam", text: $newName)
-            Button("Annuleer", role: .cancel) {}
-            Button("Maak aan") { create(.folder) }
+        .alert("New Folder", isPresented: $showingNewFolder) {
+            TextField("Name", text: $newName)
+            Button("Cancel", role: .cancel) {}
+            Button("Create") { create(.folder) }
         } message: {
-            Text("Een folder groepeert projecten — handig voor klant → project.")
+            Text("A folder groups projects — handy for client → project.")
         }
-        .alert("Aanmaken mislukt", isPresented: errorBinding) {
+        .alert("Couldn't Create", isPresented: errorBinding) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorMessage ?? "")
         }
-        .alert("Hernoemen", isPresented: renameBinding) {
-            TextField("Naam", text: $renameText)
-            Button("Annuleer", role: .cancel) {}
-            Button("Bewaar") { performRename() }
+        .alert("Rename", isPresented: renameBinding) {
+            TextField("Name", text: $renameText)
+            Button("Cancel", role: .cancel) {}
+            Button("Save") { performRename() }
         }
     }
 
     private var addButton: some View {
         Menu {
-            Button("Nieuw album", systemImage: "photo.stack") {
+            Button("New Album", systemImage: "photo.stack") {
                 newName = ""; showingNewAlbum = true
             }
-            Button("Nieuwe folder", systemImage: "folder") {
+            Button("New Folder", systemImage: "folder") {
                 newName = ""; showingNewFolder = true
             }
         } label: {
-            Label("Toevoegen", systemImage: "plus")
+            Label("Add", systemImage: "plus")
         }
     }
 
@@ -187,7 +194,9 @@ private struct ProjectsLevel: View {
     }
 
     private var itemsLabel: String {
-        children.count == 1 ? "1 item" : "\(children.count) items"
+        children.count == 1
+            ? String(localized: "1 item")
+            : String(localized: "\(children.count) items")
     }
 
     private func startRenameParent() {
@@ -211,7 +220,7 @@ private struct ProjectsLevel: View {
                     Button {
                         delete(project)
                     } label: {
-                        Label("Verwijder + foto's", systemImage: "trash")
+                        Label("Delete + Photos", systemImage: "trash")
                     }
                     .tint(.red)
                 }
@@ -220,7 +229,7 @@ private struct ProjectsLevel: View {
                         renameText = project.title
                         renaming = project
                     } label: {
-                        Label("Hernoem", systemImage: "pencil")
+                        Label("Rename", systemImage: "pencil")
                     }
                     .tint(.blue)
                 }
@@ -230,14 +239,14 @@ private struct ProjectsLevel: View {
 
     private var emptyState: some View {
         ContentUnavailableView {
-            Label(parent == nil ? "Nog geen projecten" : "Lege folder",
+            Label(parent == nil ? "No Projects Yet" : "Empty Folder",
                   systemImage: "shippingbox")
         } description: {
-            Text("Maak een album aan voor je demontagefoto's, of een folder om projecten te groeperen.")
+            Text("Create an album for your teardown photos, or a folder to group projects.")
         } actions: {
-            Button("Nieuw album") { newName = ""; showingNewAlbum = true }
+            Button("New Album") { newName = ""; showingNewAlbum = true }
                 .buttonStyle(.borderedProminent)
-            Button("Nieuwe folder") { newName = ""; showingNewFolder = true }
+            Button("New Folder") { newName = ""; showingNewFolder = true }
         }
     }
 
@@ -332,10 +341,10 @@ private struct ProjectRow: View {
     private var subtitle: String? {
         if project.isFolder {
             guard let n = project.childCount else { return nil }
-            return n == 1 ? "1 item" : "\(n) items"
+            return n == 1 ? String(localized: "1 item") : String(localized: "\(n) items")
         }
         guard let count = project.assetCount else { return nil }
-        let photos = count == 1 ? "1 foto" : "\(count) foto's"
+        let photos = count == 1 ? String(localized: "1 photo") : String(localized: "\(count) photos")
         guard let last = project.lastActivity else { return photos }
         return "\(photos) · \(last.formatted(.relative(presentation: .named)))"
     }

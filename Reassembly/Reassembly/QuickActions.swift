@@ -93,7 +93,7 @@ enum QuickActions {
     private static func item(albumID: String, title: String) -> UIApplicationShortcutItem {
         UIApplicationShortcutItem(
             type: captureType,
-            localizedTitle: "Foto in \(title)",
+            localizedTitle: String(localized: "Photo in \(title)"),
             localizedSubtitle: nil,
             icon: UIApplicationShortcutIcon(systemImageName: "camera"),
             userInfo: ["albumID": albumID as NSString]
@@ -137,9 +137,9 @@ final class SceneDelegate: NSObject, UIWindowSceneDelegate {
 // MARK: - App Intent (Shortcuts / Siri / Action Button, straks ControlWidget)
 
 struct CapturePhotoIntent: AppIntent {
-    static let title: LocalizedStringResource = "Maak foto in actief project"
+    static let title: LocalizedStringResource = "Take Photo in Active Project"
     static let description = IntentDescription(
-        "Opent de camera in het project waar je het laatst mee bezig was.")
+        "Opens the camera in the project you were last working on.")
     static let openAppWhenRun = true
 
     @MainActor
@@ -158,7 +158,7 @@ enum CaptureError: Error, CustomLocalizedStringResourceConvertible {
     var localizedStringResource: LocalizedStringResource {
         switch self {
         case .noActiveProject:
-            "Er is nog geen actief project — open eerst een album in Reassembly."
+            "There's no active project yet — open an album in Re-assembly first."
         }
     }
 }
@@ -167,8 +167,8 @@ struct ReassemblyShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: CapturePhotoIntent(),
-            phrases: ["Maak een foto in \(.applicationName)"],
-            shortTitle: "Foto in actief project",
+            phrases: ["Take a photo in \(.applicationName)"],
+            shortTitle: "Photo in Active Project",
             systemImageName: "camera"
         )
     }

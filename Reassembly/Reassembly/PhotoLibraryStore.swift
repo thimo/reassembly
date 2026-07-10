@@ -149,7 +149,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         let count = PHAsset.fetchAssets(in: album, options: nil).count
         return Project(
             id: album.localIdentifier,
-            title: album.localizedTitle ?? "Naamloos album",
+            title: album.localizedTitle ?? String(localized: "Untitled Album"),
             kind: .album(album),
             assetCount: count,
             lastActivity: newestAssetDate(in: album),
@@ -161,7 +161,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         let childCount = PHCollection.fetchCollections(in: folder, options: nil).count
         return Project(
             id: folder.localIdentifier,
-            title: folder.localizedTitle ?? "Naamloze folder",
+            title: folder.localizedTitle ?? String(localized: "Untitled Folder"),
             kind: .folder(folder),
             assetCount: nil,
             childCount: childCount,
@@ -339,17 +339,16 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         // app niet bewerken; photosd weigert de commit dan hoe dan ook.
         guard asset.canPerform(.content) else {
             throw RotationError(
-                stage: "vooraf",
+                stage: String(localized: "before starting"),
                 underlying: CocoaError(.featureUnsupported, userInfo: [
-                    NSLocalizedDescriptionKey:
-                        "Photos staat bewerken van deze foto niet toe " +
-                        "(gedeeld album of gedeelde bibliotheek?)",
+                    NSLocalizedDescriptionKey: String(localized:
+                        "Photos doesn't allow editing this photo (shared album or shared library?)"),
                 ]))
         }
 
         let input: PHContentEditingInput
         do { input = try await editingInput(for: asset) }
-        catch { throw RotationError(stage: "origineel ophalen", underlying: error) }
+        catch { throw RotationError(stage: String(localized: "fetching original"), underlying: error) }
 
         let output = PHContentEditingOutput(contentEditingInput: input)
         output.adjustmentData = PHAdjustmentData(
@@ -364,10 +363,10 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         var renderInfo = "live"
         if isLive {
             do { try await renderRotatedLivePhoto(input: input, to: output) }
-            catch { throw RotationError(stage: "Live Photo renderen", underlying: error) }
+            catch { throw RotationError(stage: String(localized: "rendering Live Photo"), underlying: error) }
         } else {
             do { renderInfo = try renderRotatedStill(input: input, to: output) }
-            catch { throw RotationError(stage: "foto renderen", underlying: error) }
+            catch { throw RotationError(stage: String(localized: "rendering photo"), underlying: error) }
         }
 
         do {
@@ -375,7 +374,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
                 PHAssetChangeRequest(for: asset).contentEditingOutput = output
             }
         } catch {
-            throw RotationError(stage: "opslaan (\(renderInfo))", underlying: error)
+            throw RotationError(stage: String(localized: "saving (\(renderInfo))"), underlying: error)
         }
         changeToken &+= 1
     }
@@ -396,7 +395,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
                 current = ns.userInfo[NSUnderlyingErrorKey] as? NSError
                 depth += 1
             }
-            return "Stap '\(stage)': " + parts.joined(separator: " ← ")
+            return String(localized: "Step '\(stage)': ") + parts.joined(separator: " ← ")
         }
     }
 
@@ -417,15 +416,28 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
             ? .jpeg
             : (output.defaultRenderedContentType ?? .jpeg)
         let renderURL = try output.renderedContentURL(for: type)
-        let colorSpace = rotated.colorSpace ?? CGColorSpaceCreateDeviceRGB()
-        let context = CIContext()
-        if type.conforms(to: .heic) || type.conforms(to: .heif) {
-            try context.writeHEIFRepresentation(
-                of: rotated, to: renderURL, format: .RGBA8, colorSpace: colorSpace)
-        } else {
-            try context.writeJPEGRepresentation(
-                of: rotated, to: renderURL, colorSpace: colorSpace)
+
+        // Expliciet naar 8-bit SDR renderen. HDR-camerafoto's dragen een
+        // HDR-kleurruimte mee; de CI-JPEG-writer nam die over en produceerde
+        // een bestand waar de JFIF-validator van Photos in stikte
+        // (CMPhotoJFIFUtilities err -17102 → 3302 invalidResource).
+        let colorSpace = CGColorSpace(name: CGColorSpace.displayP3)
+            ?? CGColorSpaceCreateDeviceRGB()
+        guard let cgImage = CIContext().createCGImage(
+            rotated, from: rotated.extent, format: .RGBA8, colorSpace: colorSpace)
+        else { throw CocoaError(.fileWriteUnknown) }
+
+        guard let destination = CGImageDestinationCreateWithURL(
+            renderURL as CFURL, type.identifier as CFString, 1, nil)
+        else { throw CocoaError(.fileWriteUnknown) }
+        let properties: [CFString: Any] = [
+            kCGImageDestinationLossyCompressionQuality: 0.95,
+        ]
+        CGImageDestinationAddImage(destination, cgImage, properties as CFDictionary)
+        guard CGImageDestinationFinalize(destination) else {
+            throw CocoaError(.fileWriteUnknown)
         }
+
         let bytes = (try? FileManager.default
             .attributesOfItem(atPath: renderURL.path)[.size] as? NSNumber)?.intValue ?? 0
         return "\(type.identifier), \(bytes) bytes"

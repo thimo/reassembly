@@ -15,7 +15,7 @@ struct TitleMenu: View {
 
     var body: some View {
         Menu {
-            Button("Hernoem", systemImage: "pencil", action: rename)
+            Button("Rename", systemImage: "pencil", action: rename)
         } label: {
             VStack(spacing: 0) {
                 Text(title)

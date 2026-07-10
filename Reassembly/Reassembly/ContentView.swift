@@ -49,20 +49,20 @@ private struct PermissionGate: View {
 
     private var title: String {
         switch store.authorization {
-        case .notDetermined: "Toegang tot je foto's"
-        case .limited:       "Volledige toegang nodig"
-        default:             "Geen toegang tot Photos"
+        case .notDetermined: String(localized: "Access to your photos")
+        case .limited:       String(localized: "Full access needed")
+        default:             String(localized: "No access to Photos")
         }
     }
 
     private var message: String {
         switch store.authorization {
         case .notDetermined:
-            "Reassembly bewaart je demontagefoto's in Photos en beheert daar albums. Daarvoor is toegang nodig."
+            String(localized: "Re-assembly stores your teardown photos in Photos and manages albums there. That requires access.")
         case .limited:
-            "Je gaf beperkte toegang. Reassembly kan alleen albums aanmaken en uitlezen met volledige toegang tot je fotobibliotheek."
+            String(localized: "You gave limited access. Re-assembly can only create and read albums with full access to your photo library.")
         default:
-            "Zet toegang tot Photos aan in Instellingen om Reassembly te gebruiken."
+            String(localized: "Turn on access to Photos in Settings to use Re-assembly.")
         }
     }
 
@@ -70,12 +70,12 @@ private struct PermissionGate: View {
     private var action: some View {
         switch store.authorization {
         case .notDetermined:
-            Button("Geef toegang") {
+            Button("Allow Access") {
                 Task { await store.requestAccess() }
             }
             .buttonStyle(.borderedProminent)
         default:
-            Button("Open Instellingen") {
+            Button("Open Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }

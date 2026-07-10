@@ -192,6 +192,7 @@
 			knownRegions = (
 				en,
 				Base,
+				nl,
 			);
 			mainGroup = 3568B9812FF7EE20007DA0AB;
 			minimizedProjectReferenceProxies = 1;
@@ -401,9 +402,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Re-assembly";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Re-assembly gebruikt de camera om demontagefoto's te maken in je actieve project.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Re-assembly zet de locatie op je demontagefoto's, zodat je later weet waar je aan het sleutelen was.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Re-assembly bewaart je demontagefoto's in je fotobibliotheek en maakt daarvoor albums aan.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Re-assembly uses the camera to take teardown photos in your active project.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Re-assembly adds location to your teardown photos, so you'll know later where you were working.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Re-assembly stores your teardown photos in your photo library and creates albums for them.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -438,9 +439,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Re-assembly";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Re-assembly gebruikt de camera om demontagefoto's te maken in je actieve project.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Re-assembly zet de locatie op je demontagefoto's, zodat je later weet waar je aan het sleutelen was.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Re-assembly bewaart je demontagefoto's in je fotobibliotheek en maakt daarvoor albums aan.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Re-assembly uses the camera to take teardown photos in your active project.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Re-assembly adds location to your teardown photos, so you'll know later where you were working.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Re-assembly stores your teardown photos in your photo library and creates albums for them.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

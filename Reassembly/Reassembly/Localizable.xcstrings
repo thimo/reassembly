@@ -1,0 +1,627 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%lld items": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld items"
+          }
+        }
+      }
+    },
+    "%lld photos": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld foto's"
+          }
+        }
+      }
+    },
+    "1 item": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 item"
+          }
+        }
+      }
+    },
+    "1 photo": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 foto"
+          }
+        }
+      }
+    },
+    "A folder groups projects — handy for client → project.": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Een folder groepeert projecten — handig voor klant → project."
+          }
+        }
+      }
+    },
+    "Access to your photos": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toegang tot je foto's"
+          }
+        }
+      }
+    },
+    "Add": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toevoegen"
+          }
+        }
+      }
+    },
+    "Allow Access": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geef toegang"
+          }
+        }
+      }
+    },
+    "Camera Unavailable": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera niet beschikbaar"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annuleer"
+          }
+        }
+      }
+    },
+    "Couldn't Create": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aanmaken mislukt"
+          }
+        }
+      }
+    },
+    "Create": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maak aan"
+          }
+        }
+      }
+    },
+    "Create an album for your teardown photos, or a folder to group projects.": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maak een album aan voor je demontagefoto's, of een folder om projecten te groeperen."
+          }
+        }
+      }
+    },
+    "Delete": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verwijder"
+          }
+        }
+      }
+    },
+    "Delete (%lld)": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verwijder (%lld)"
+          }
+        }
+      }
+    },
+    "Delete + Photos": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verwijder + foto's"
+          }
+        }
+      }
+    },
+    "Delete Photo": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verwijder foto"
+          }
+        }
+      }
+    },
+    "Deselect All": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deselecteer alles"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klaar"
+          }
+        }
+      }
+    },
+    "Empty Folder": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lege folder"
+          }
+        }
+      }
+    },
+    "Full access needed": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volledige toegang nodig"
+          }
+        }
+      }
+    },
+    "Name": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Naam"
+          }
+        }
+      }
+    },
+    "New Album": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nieuw album"
+          }
+        }
+      }
+    },
+    "New Folder": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nieuwe folder"
+          }
+        }
+      }
+    },
+    "No Camera Access": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geen cameratoegang"
+          }
+        }
+      }
+    },
+    "No Photos Yet": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nog geen foto's"
+          }
+        }
+      }
+    },
+    "No Projects Yet": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nog geen projecten"
+          }
+        }
+      }
+    },
+    "No access to Photos": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geen toegang tot Photos"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Open Settings": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Instellingen"
+          }
+        }
+      }
+    },
+    "Opens the camera in the project you were last working on.": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opent de camera in het project waar je het laatst mee bezig was."
+          }
+        }
+      }
+    },
+    "Photo in %@": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foto in %@"
+          }
+        }
+      }
+    },
+    "Photo in Active Project": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foto in actief project"
+          }
+        }
+      }
+    },
+    "Photos doesn't allow editing this photo (shared album or shared library?)": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photos staat bewerken van deze foto niet toe (gedeeld album of gedeelde bibliotheek?)"
+          }
+        }
+      }
+    },
+    "Re-assembly is the reverse of disassembly.": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gelukkig hebben we de foto's nog."
+          }
+        }
+      }
+    },
+    "Re-assembly stores your teardown photos in Photos and manages albums there. That requires access.": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reassembly bewaart je demontagefoto's in Photos en beheert daar albums. Daarvoor is toegang nodig."
+          }
+        }
+      }
+    },
+    "Rename": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hernoemen"
+          }
+        }
+      }
+    },
+    "Rotate 90°": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draai 90°"
+          }
+        }
+      }
+    },
+    "Rotation Failed": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draaien mislukt"
+          }
+        }
+      }
+    },
+    "Save": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bewaar"
+          }
+        }
+      }
+    },
+    "Select": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selecteer"
+          }
+        }
+      }
+    },
+    "Select All": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selecteer alles"
+          }
+        }
+      }
+    },
+    "Something Went Wrong": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Er ging iets mis"
+          }
+        }
+      }
+    },
+    "Step '%@': ": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stap '%@': "
+          }
+        }
+      }
+    },
+    "Take Photo in Active Project": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maak foto in actief project"
+          }
+        }
+      }
+    },
+    "Take a photo in ${applicationName}": {
+      "extractionState": "stale",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maak een foto in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Tap the camera button to take your first teardown photo.": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tik op de cameraknop om je eerste demontagefoto te maken."
+          }
+        }
+      }
+    },
+    "The simulator has no camera. Test on a device.": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De simulator heeft geen camera. Test op een toestel."
+          }
+        }
+      }
+    },
+    "There's no active project yet — open an album in Re-assembly first.": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Er is nog geen actief project — open eerst een album in Reassembly."
+          }
+        }
+      }
+    },
+    "This creates an album with this name in Photos.": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Er wordt een album met deze naam in Photos aangemaakt."
+          }
+        }
+      }
+    },
+    "Today": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vandaag"
+          }
+        }
+      }
+    },
+    "Turn on access to Photos in Settings to use Re-assembly.": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zet toegang tot Photos aan in Instellingen om Reassembly te gebruiken."
+          }
+        }
+      }
+    },
+    "Turn on camera access in Settings.": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zet cameratoegang aan in Instellingen."
+          }
+        }
+      }
+    },
+    "Untitled Album": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Naamloos album"
+          }
+        }
+      }
+    },
+    "Untitled Folder": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Naamloze folder"
+          }
+        }
+      }
+    },
+    "Yesterday": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gisteren"
+          }
+        }
+      }
+    },
+    "You gave limited access. Re-assembly can only create and read albums with full access to your photo library.": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Je gaf beperkte toegang. Reassembly kan alleen albums aanmaken en uitlezen met volledige toegang tot je fotobibliotheek."
+          }
+        }
+      }
+    },
+    "before starting": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "vooraf"
+          }
+        }
+      }
+    },
+    "fetching original": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "origineel ophalen"
+          }
+        }
+      }
+    },
+    "rendering Live Photo": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Live Photo renderen"
+          }
+        }
+      }
+    },
+    "rendering photo": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "foto renderen"
+          }
+        }
+      }
+    },
+    "saving (%@)": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "opslaan (%@)"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

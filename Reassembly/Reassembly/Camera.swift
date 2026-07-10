@@ -156,10 +156,10 @@ struct CameraView: View {
 
             if model.accessDenied {
                 ContentUnavailableView {
-                    Label("Geen cameratoegang", systemImage: "camera.fill")
+                    Label("No Camera Access", systemImage: "camera.fill")
                         .foregroundStyle(.white)
                 } description: {
-                    Text("Zet cameratoegang aan in Instellingen.")
+                    Text("Turn on camera access in Settings.")
                         .foregroundStyle(.white.opacity(0.8))
                 }
             }
@@ -244,7 +244,7 @@ struct CameraView: View {
             Spacer()
             Group {
                 if model.capturedCount > 0 {
-                    Text("\(model.capturedCount)")
+                    Text(verbatim: "\(model.capturedCount)")
                         .font(.headline.weight(.bold))
                         .foregroundStyle(.black)
                         .frame(width: 52, height: 52)
