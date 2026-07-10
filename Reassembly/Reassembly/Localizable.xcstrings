@@ -1,12 +1,22 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "%lld items": {
+    "%lld albums": {
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld items"
+            "value": "%lld albums"
+          }
+        }
+      }
+    },
+    "%lld folders": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld folders"
           }
         }
       }
@@ -21,12 +31,22 @@
         }
       }
     },
-    "1 item": {
+    "1 album": {
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "1 item"
+            "value": "1 album"
+          }
+        }
+      }
+    },
+    "1 folder": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 folder"
           }
         }
       }
@@ -578,6 +598,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "vooraf"
+          }
+        }
+      }
+    },
+    "empty": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "leeg"
           }
         }
       }

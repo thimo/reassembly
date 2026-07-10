@@ -23,8 +23,9 @@ struct Project: Identifiable {
 
     /// Aantal foto's (nil voor folders).
     let assetCount: Int?
-    /// Aantal onderliggende albums/folders (nil voor albums).
-    var childCount: Int? = nil
+    /// Aantal subfolders resp. albums direct hieronder (nil voor albums).
+    var folderCount: Int? = nil
+    var albumCount: Int? = nil
     /// Datum nieuwste asset — de "laatste activiteit" waarop we sorteren.
     let lastActivity: Date?
     /// Datum oudste asset — benadering van aanmaakdatum (alternatieve sortering).
@@ -33,6 +34,25 @@ struct Project: Identifiable {
     var isFolder: Bool {
         if case .folder = kind { return true }
         return false
+    }
+}
+
+extension Project {
+    /// Nette inhoudsomschrijving van een folder: "1 folder, 2 albums",
+    /// "2 albums", of "leeg". Gebruikt in de titelbalk én de rij-subtitel.
+    static func contentsLabel(folders: Int, albums: Int) -> String {
+        let folderPart = folders == 1
+            ? String(localized: "1 folder")
+            : String(localized: "\(folders) folders")
+        let albumPart = albums == 1
+            ? String(localized: "1 album")
+            : String(localized: "\(albums) albums")
+        switch (folders > 0, albums > 0) {
+        case (true, true):   return "\(folderPart), \(albumPart)"
+        case (true, false):  return folderPart
+        case (false, true):  return albumPart
+        case (false, false): return String(localized: "empty")
+        }
     }
 }
 

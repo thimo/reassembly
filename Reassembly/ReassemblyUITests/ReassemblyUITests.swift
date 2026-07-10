@@ -78,11 +78,11 @@ final class ReassemblyUITests: XCTestCase {
         goBack(app)
         goBack(app)
 
-        // 7. Root toont de folder met "1 item" — de childCount-refresh.
+        // 7. Root toont de folder met "1 album" — de telling-refresh.
         XCTAssertTrue(app.staticTexts[folderName].waitForExistence(timeout: 5),
                       "Folder niet zichtbaar op root")
-        XCTAssertTrue(app.staticTexts["1 item"].waitForExistence(timeout: 5),
-                      "Folder-telling niet ververst (bug: bleef 0 items)")
+        XCTAssertTrue(app.staticTexts["1 album"].waitForExistence(timeout: 5),
+                      "Folder-telling niet ververst (bug: bleef leeg)")
 
         // 8. Hernoemen via leading swipe.
         let newName = folderName + "-hernoemd"

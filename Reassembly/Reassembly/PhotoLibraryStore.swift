@@ -158,13 +158,20 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
     }
 
     private func makeProject(folder: PHCollectionList) -> Project {
-        let childCount = PHCollection.fetchCollections(in: folder, options: nil).count
+        var folders = 0
+        var albums = 0
+        PHCollection.fetchCollections(in: folder, options: nil)
+            .enumerateObjects { collection, _, _ in
+                if collection is PHAssetCollection { albums += 1 }
+                else if collection is PHCollectionList { folders += 1 }
+            }
         return Project(
             id: folder.localIdentifier,
             title: folder.localizedTitle ?? String(localized: "Untitled Folder"),
             kind: .folder(folder),
             assetCount: nil,
-            childCount: childCount,
+            folderCount: folders,
+            albumCount: albums,
             // Activiteit = nieuwste asset ergens onder deze folder (recursief).
             lastActivity: newestAssetDate(inFolder: folder),
             firstActivity: nil

@@ -194,9 +194,8 @@ private struct ProjectsLevel: View {
     }
 
     private var itemsLabel: String {
-        children.count == 1
-            ? String(localized: "1 item")
-            : String(localized: "\(children.count) items")
+        let folders = children.filter(\.isFolder).count
+        return Project.contentsLabel(folders: folders, albums: children.count - folders)
     }
 
     private func startRenameParent() {
@@ -340,8 +339,9 @@ private struct ProjectRow: View {
 
     private var subtitle: String? {
         if project.isFolder {
-            guard let n = project.childCount else { return nil }
-            return n == 1 ? String(localized: "1 item") : String(localized: "\(n) items")
+            guard let folders = project.folderCount,
+                  let albums = project.albumCount else { return nil }
+            return Project.contentsLabel(folders: folders, albums: albums)
         }
         guard let count = project.assetCount else { return nil }
         let photos = count == 1 ? String(localized: "1 photo") : String(localized: "\(count) photos")
