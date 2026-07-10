@@ -171,12 +171,12 @@ private struct ProjectsLevel: View {
                 newName = ""; showingNewFolder = true
             }
         } label: {
-            // Zelfde ingetogen stijl als toen 'ie nog in de toolbar zat: kaal
-            // plusje in accentkleur. Frame houdt het raakvlak op tapmaat.
             Image(systemName: "plus")
                 .font(.title2)
-                .frame(width: 44, height: 44)
-                .contentShape(Rectangle())
+                .foregroundStyle(.white)
+                .frame(width: 56, height: 56)
+                .background(Circle().fill(Color.accentColor))
+                .shadow(radius: 8, y: 4)
         }
         .accessibilityLabel("Toevoegen")
         .padding(.trailing, 20)
