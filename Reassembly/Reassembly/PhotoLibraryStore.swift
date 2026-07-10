@@ -328,24 +328,24 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
 
     // MARK: - Bewerken
 
-    /// Draait een foto 90° met de klok mee. Non-destructief via Photos' eigen
-    /// edit-pijplijn: het origineel blijft bewaard en "Herstel" in de Photos-app
-    /// blijft werken. Eerdere bewerkingen worden ingebakken (wij lezen andermans
-    /// adjustment data niet).
-    func rotateClockwise(_ asset: PHAsset) async throws {
+    /// Draait een foto 90° tegen de klok in (zoals Photos). Non-destructief via
+    /// Photos' eigen edit-pijplijn: het origineel blijft bewaard en "Herstel" in
+    /// de Photos-app blijft werken. Eerdere bewerkingen worden ingebakken (wij
+    /// lezen andermans adjustment data niet).
+    func rotateCounterclockwise(_ asset: PHAsset) async throws {
         let input = try await editingInput(for: asset)
         guard let url = input.fullSizeImageURL,
               let original = CIImage(contentsOf: url) else {
             throw CocoaError(.fileReadCorruptFile)
         }
         let upright = original.oriented(forExifOrientation: input.fullSizeImageOrientation)
-        let rotated = upright.oriented(.right)
+        let rotated = upright.oriented(.left)
 
         let output = PHContentEditingOutput(contentEditingInput: input)
         output.adjustmentData = PHAdjustmentData(
             formatIdentifier: "nl.defrog.reassembly.rotate",
             formatVersion: "1",
-            data: Data("cw90".utf8))
+            data: Data("ccw90".utf8))
         // Photos bepaalt per asset/apparaat welk uitvoerformaat het wil (JPEG
         // op de simulator, HEIC voor camerafoto's op toestellen); schrijf dat
         // formaat, anders keurt Photos de edit af (3302 invalidResource).

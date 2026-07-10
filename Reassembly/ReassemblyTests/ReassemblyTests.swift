@@ -70,7 +70,7 @@ struct ReassemblyTests {
         let height = asset.pixelHeight
         #expect(width > height, "Testfoto hoort liggend te zijn")
 
-        try await store.rotateClockwise(asset)
+        try await store.rotateCounterclockwise(asset)
 
         let rotated = try #require(PHAsset
             .fetchAssets(withLocalIdentifiers: [assetID], options: nil).firstObject)

@@ -200,7 +200,7 @@ struct AlbumView: View {
             Button {
                 rotate(asset)
             } label: {
-                Label("Draai 90°", systemImage: "arrow.clockwise")
+                Label("Draai 90°", systemImage: "arrow.counterclockwise")
             }
         }
         Button(role: .destructive) {
@@ -269,7 +269,7 @@ struct AlbumView: View {
 
     private func rotate(_ asset: PHAsset) {
         Task {
-            do { try await store.rotateClockwise(asset) }
+            do { try await store.rotateCounterclockwise(asset) }
             catch { errorMessage = error.localizedDescription }
         }
     }
@@ -434,7 +434,7 @@ private struct PhotoViewer: View {
                 Spacer()
                 if assets.indices.contains(index), assets[index].mediaType == .image {
                     Button { rotateCurrent() } label: {
-                        Image(systemName: "arrow.clockwise.circle.fill")
+                        Image(systemName: "arrow.counterclockwise.circle.fill")
                             .font(.largeTitle)
                             .foregroundStyle(.white.opacity(0.85))
                     }
@@ -466,7 +466,7 @@ private struct PhotoViewer: View {
         let asset = assets[index]
         Task {
             // Grid en viewer verversen zelf via changeToken.
-            do { try await store.rotateClockwise(asset) }
+            do { try await store.rotateCounterclockwise(asset) }
             catch { errorMessage = error.localizedDescription }
         }
     }
