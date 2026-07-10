@@ -55,6 +55,23 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         return childProjects(of: target)
     }
 
+    /// Zoekt een album of folder op localIdentifier — voor navigatie-herstel.
+    /// Geeft nil als het item niet (meer) bestaat.
+    func project(withLocalIdentifier id: String) -> Project? {
+        guard hasFullAccess else { return nil }
+        if let album = PHAssetCollection
+            .fetchAssetCollections(withLocalIdentifiers: [id], options: nil)
+            .firstObject {
+            return makeProject(album: album)
+        }
+        if let folder = PHCollectionList
+            .fetchCollectionLists(withLocalIdentifiers: [id], options: nil)
+            .firstObject {
+            return makeProject(folder: folder)
+        }
+        return nil
+    }
+
     private func findRootFolder() -> PHCollectionList? {
         let options = PHFetchOptions()
         options.predicate = NSPredicate(format: "localizedTitle == %@", Self.rootFolderName)
@@ -259,6 +276,55 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
             }
         }
         changeToken &+= 1
+    }
+
+    // MARK: - Bewerken
+
+    /// Draait een foto 90° met de klok mee. Non-destructief via Photos' eigen
+    /// edit-pijplijn: het origineel blijft bewaard en "Herstel" in de Photos-app
+    /// blijft werken. Eerdere bewerkingen worden ingebakken (wij lezen andermans
+    /// adjustment data niet).
+    func rotateClockwise(_ asset: PHAsset) async throws {
+        let input = try await editingInput(for: asset)
+        guard let url = input.fullSizeImageURL,
+              let original = CIImage(contentsOf: url) else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        let upright = original.oriented(forExifOrientation: input.fullSizeImageOrientation)
+        let rotated = upright.oriented(.right)
+
+        let output = PHContentEditingOutput(contentEditingInput: input)
+        output.adjustmentData = PHAdjustmentData(
+            formatIdentifier: "nl.defrog.reassembly.rotate",
+            formatVersion: "1",
+            data: Data("cw90".utf8))
+        let colorSpace = rotated.colorSpace ?? CGColorSpaceCreateDeviceRGB()
+        try CIContext().writeJPEGRepresentation(
+            of: rotated, to: output.renderedContentURL, colorSpace: colorSpace)
+
+        try await PHPhotoLibrary.shared().performChanges {
+            PHAssetChangeRequest(for: asset).contentEditingOutput = output
+        }
+        changeToken &+= 1
+    }
+
+    /// Async-wrapper om de callback-API van PhotoKit; haalt zo nodig het
+    /// origineel uit iCloud.
+    private func editingInput(for asset: PHAsset) async throws -> PHContentEditingInput {
+        let options = PHContentEditingInputRequestOptions()
+        options.isNetworkAccessAllowed = true
+        options.canHandleAdjustmentData = { _ in false }
+        return try await withCheckedThrowingContinuation { continuation in
+            asset.requestContentEditingInput(with: options) { input, info in
+                if let input {
+                    continuation.resume(returning: input)
+                } else {
+                    let error = (info[PHContentEditingInputErrorKey] as? Error)
+                        ?? CocoaError(.fileReadUnknown)
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     // MARK: - Verwijderen

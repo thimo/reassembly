@@ -18,6 +18,8 @@ final class ReassemblyUITests: XCTestCase {
     @MainActor
     func testCreateNestNavigateAndRename() throws {
         let app = XCUIApplication()
+        // Vorige runs kunnen een navigatiestand achterlaten; start altijd op root.
+        app.launchArguments += ["--reset-navigation"]
 
         // Sta de Photos-dialoog toe zodra die de app onderbreekt.
         addUIInterruptionMonitor(withDescription: "Photos-toegang") { alert in
@@ -47,17 +49,24 @@ final class ReassemblyUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Nog geen foto's"].waitForExistence(timeout: 5),
                       "Nieuw album opende niet automatisch")
 
-        // 3. Terug naar folderniveau, dan naar root.
+        // 3. Herstel: app killen en koud herstarten → zelfde album weer open.
+        app.terminate()
+        app.launchArguments = []   // géén reset-vlag: nu moet herstel juist werken
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Nog geen foto's"].waitForExistence(timeout: 10),
+                      "Navigatiepad niet hersteld na koude herstart")
+
+        // 4. Terug naar folderniveau, dan naar root.
         goBack(app)
         goBack(app)
 
-        // 4. Root toont de folder met "1 item" — de childCount-refresh.
+        // 5. Root toont de folder met "1 item" — de childCount-refresh.
         XCTAssertTrue(app.staticTexts[folderName].waitForExistence(timeout: 5),
                       "Folder niet zichtbaar op root")
         XCTAssertTrue(app.staticTexts["1 item"].waitForExistence(timeout: 5),
                       "Folder-telling niet ververst (bug: bleef 0 items)")
 
-        // 5. Hernoemen via leading swipe.
+        // 6. Hernoemen via leading swipe.
         let newName = folderName + "-hernoemd"
         app.staticTexts[folderName].swipeRight()
         app.buttons["Hernoem"].tap()
@@ -67,11 +76,11 @@ final class ReassemblyUITests: XCTestCase {
         field.typeText(newName)
         app.alerts["Hernoemen"].buttons["Bewaar"].tap()
 
-        // 6. Naam beweegt mee — de rename-refresh.
+        // 7. Naam beweegt mee — de rename-refresh.
         XCTAssertTrue(app.staticTexts[newName].waitForExistence(timeout: 5),
                       "Naam niet ververst na hernoemen")
 
-        // 7. Opruimen: verwijderen + de systeem-bevestiging bevestigen.
+        // 8. Opruimen: verwijderen + de systeem-bevestiging bevestigen.
         app.staticTexts[newName].swipeLeft()
         let deleteButton = app.buttons["Verwijder + foto's"]
         if deleteButton.waitForExistence(timeout: 5) {

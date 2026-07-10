@@ -15,7 +15,11 @@ import Photos
 /// zowel tikken als auto-open na aanmaken via hetzelfde pad lopen.
 struct ProjectsListView: View {
     let store: PhotoLibraryStore
-    @State private var path = NavigationPath()
+    @State private var path: [Project] = []
+    @State private var restored = false
+
+    /// UserDefaults-sleutel: de localIdentifiers van het open pad, root → diepst.
+    private static let pathKey = "navigationPath"
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -30,6 +34,30 @@ struct ProjectsListView: View {
                     }
                 }
         }
+        .onAppear(perform: restore)
+        .onChange(of: path) {
+            guard restored else { return }
+            UserDefaults.standard.set(path.map(\.id), forKey: Self.pathKey)
+        }
+    }
+
+    /// Herstelt het navigatiepad van de vorige sessie, ook na force-quit.
+    /// Onvindbare items (buitenom verwijderd in Photos) kappen het pad af;
+    /// je landt dan op het diepste niveau dat nog bestaat.
+    private func restore() {
+        guard !restored else { return }
+        restored = true
+        if ProcessInfo.processInfo.arguments.contains("--reset-navigation") {
+            UserDefaults.standard.removeObject(forKey: Self.pathKey)
+            return
+        }
+        let ids = UserDefaults.standard.stringArray(forKey: Self.pathKey) ?? []
+        var result: [Project] = []
+        for id in ids {
+            guard let project = store.project(withLocalIdentifier: id) else { break }
+            result.append(project)
+        }
+        path = result
     }
 }
 
@@ -40,7 +68,7 @@ private struct ProjectsLevel: View {
     /// De folder waarvan we de inhoud tonen; nil = de root-folder.
     let parent: PHCollectionList?
     let title: String
-    @Binding var path: NavigationPath
+    @Binding var path: [Project]
 
     @State private var showingNewAlbum = false
     @State private var showingNewFolder = false

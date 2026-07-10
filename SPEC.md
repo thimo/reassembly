@@ -65,7 +65,9 @@ Let op: assets verdwijnen library-breed, ook als ze in een ander album zitten.
 
 - SwiftUI, één codebase iPhone + iPad; minimum iOS 18 (ControlWidget op lock
   screen + LockedCameraCapture vereisen dat toch al)
-- Eigen state: alleen "actief project" (UserDefaults) — verder niets
+- Eigen state (UserDefaults, per device): "actief project" + het open
+  navigatiepad (localIdentifiers) zodat de app na herstart terugkomt waar je
+  was — verder niets
 - PhotoKit: `PHCollectionListChangeRequest` / `PHAssetCollectionChangeRequest` /
   `PHAssetCreationRequest`
 - AVFoundation-camera + CoreLocation: geotag zelf op de `PHAssetCreationRequest`

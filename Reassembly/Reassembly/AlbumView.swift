@@ -122,6 +122,13 @@ struct AlbumView: View {
 
     @ViewBuilder
     private func menu(for asset: PHAsset) -> some View {
+        if asset.mediaType == .image {
+            Button {
+                rotate(asset)
+            } label: {
+                Label("Draai 90°", systemImage: "rotate.right")
+            }
+        }
         Button(role: .destructive) {
             deleteSingle(asset)
         } label: {
@@ -183,6 +190,14 @@ struct AlbumView: View {
         Task {
             // userCancelled of andere fouten: stil laten, foto blijft staan.
             try? await store.deleteAsset(asset)
+        }
+    }
+
+    private func rotate(_ asset: PHAsset) {
+        Task {
+            // Mislukt (bv. iCloud-origineel niet op te halen): foto blijft
+            // gewoon staan; stil laten.
+            try? await store.rotateClockwise(asset)
         }
     }
 
@@ -276,7 +291,9 @@ private struct Thumbnail: View {
                 if selecting { badge }
             }
             .contentShape(Rectangle())
-            .onAppear(perform: load)
+            // Herladen bij verschijnen én na een bewerking (rotatie verandert
+            // modificationDate). PHImageManager cachet, dus her-opvragen is goedkoop.
+            .task(id: asset.modificationDate) { load() }
     }
 
     private var badge: some View {
@@ -292,7 +309,6 @@ private struct Thumbnail: View {
     }
 
     private func load() {
-        guard image == nil else { return }
         let scale = UIScreen.main.scale
         let target = CGSize(width: 216 * scale, height: 216 * scale)
         let options = PHImageRequestOptions()
@@ -333,6 +349,13 @@ private struct PhotoViewer: View {
                         .foregroundStyle(.white.opacity(0.85))
                 }
                 Spacer()
+                if assets.indices.contains(index), assets[index].mediaType == .image {
+                    Button { rotateCurrent() } label: {
+                        Image(systemName: "rotate.right.fill")
+                            .font(.largeTitle)
+                            .foregroundStyle(.white.opacity(0.85))
+                    }
+                }
                 Button { deleteCurrent() } label: {
                     Image(systemName: "trash.circle.fill")
                         .font(.largeTitle)
@@ -340,6 +363,15 @@ private struct PhotoViewer: View {
                 }
             }
             .padding()
+        }
+    }
+
+    private func rotateCurrent() {
+        guard assets.indices.contains(index) else { return }
+        let asset = assets[index]
+        Task {
+            // Grid en viewer verversen zelf via changeToken → modificationDate.
+            try? await store.rotateClockwise(asset)
         }
     }
 
@@ -371,11 +403,12 @@ private struct FullImage: View {
                 ProgressView().tint(.white)
             }
         }
-        .onAppear(perform: load)
+        // Herladen bij verschijnen én na een bewerking; het oude beeld blijft
+        // staan tot de nieuwe versie binnen is (geen flits naar de spinner).
+        .task(id: asset.modificationDate) { load() }
     }
 
     private func load() {
-        guard image == nil else { return }
         let options = PHImageRequestOptions()
         options.isNetworkAccessAllowed = true
         options.deliveryMode = .highQualityFormat
