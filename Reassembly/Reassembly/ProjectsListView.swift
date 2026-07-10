@@ -249,12 +249,14 @@ private struct ProjectsLevel: View {
             } description: {
                 Text("Create an album for your teardown photos, or a folder to group projects.")
             } actions: {
+                // controlSize direct op de knoppen: ContentUnavailableView
+                // overschrijft de waarde uit de omgeving in z'n actions-sectie.
                 Button("New Album") { newName = ""; showingNewAlbum = true }
                     .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
                 Button("New Folder") { newName = ""; showingNewFolder = true }
+                    .controlSize(.large)
             }
-            // Volwaardige CTA-maat, zoals Apple's eigen onboarding-knoppen.
-            .controlSize(.large)
             .fixedSize(horizontal: false, vertical: true)
             Spacer()
 
