@@ -236,10 +236,10 @@ private struct ProjectsLevel: View {
     }
 
     private var emptyState: some View {
-        // Inhoud + tagline als één gecentreerd blok: de inhoud komt daardoor
-        // iets hoger te staan dan puur gecentreerd, met de tagline op afstand
-        // eronder.
-        VStack(spacing: 48) {
+        // Inhoud gecentreerd (door de tagline onderin komt 'ie iets hoger uit),
+        // tagline laag op het scherm.
+        VStack(spacing: 0) {
+            Spacer()
             ContentUnavailableView {
                 Label(parent == nil ? "No Projects Yet" : "Empty Folder",
                       systemImage: "shippingbox")
@@ -251,12 +251,14 @@ private struct ProjectsLevel: View {
                 Button("New Folder") { newName = ""; showingNewFolder = true }
             }
             .fixedSize(horizontal: false, vertical: true)
+            Spacer()
 
             if parent == nil {
                 tagline
+                    .padding(.bottom, 24)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
     }
 
     private var tagline: some View {
