@@ -334,6 +334,33 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
     /// lezen andermans adjustment data niet).
     func rotateCounterclockwise(_ asset: PHAsset) async throws {
         let input = try await editingInput(for: asset)
+        let output = PHContentEditingOutput(contentEditingInput: input)
+        output.adjustmentData = PHAdjustmentData(
+            formatIdentifier: "nl.defrog.reassembly.rotate",
+            formatVersion: "1",
+            data: Data("ccw90".utf8))
+
+        // Een bewerkte Live Photo moet wéér een Live Photo zijn — alleen een
+        // stilstaand beeld aanleveren keurt Photos af (3302 invalidResource).
+        // Foto's uit de standaard Camera-app zijn Live; die van onze eigen
+        // camera niet.
+        if asset.mediaSubtypes.contains(.photoLive) {
+            try await renderRotatedLivePhoto(input: input, to: output)
+        } else {
+            try renderRotatedStill(input: input, to: output)
+        }
+
+        try await PHPhotoLibrary.shared().performChanges {
+            PHAssetChangeRequest(for: asset).contentEditingOutput = output
+        }
+        changeToken &+= 1
+    }
+
+    /// Stilstaande foto: vol beeld inladen, draaien, wegschrijven in het
+    /// formaat dat Photos voor deze asset wil (JPEG op de simulator, HEIC op
+    /// toestellen).
+    private func renderRotatedStill(input: PHContentEditingInput,
+                                    to output: PHContentEditingOutput) throws {
         guard let url = input.fullSizeImageURL,
               let original = CIImage(contentsOf: url) else {
             throw CocoaError(.fileReadCorruptFile)
@@ -341,14 +368,6 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         let upright = original.oriented(forExifOrientation: input.fullSizeImageOrientation)
         let rotated = upright.oriented(.left)
 
-        let output = PHContentEditingOutput(contentEditingInput: input)
-        output.adjustmentData = PHAdjustmentData(
-            formatIdentifier: "nl.defrog.reassembly.rotate",
-            formatVersion: "1",
-            data: Data("ccw90".utf8))
-        // Photos bepaalt per asset/apparaat welk uitvoerformaat het wil (JPEG
-        // op de simulator, HEIC voor camerafoto's op toestellen); schrijf dat
-        // formaat, anders keurt Photos de edit af (3302 invalidResource).
         let type = output.defaultRenderedContentType ?? .jpeg
         let renderURL = try output.renderedContentURL(for: type)
         let colorSpace = rotated.colorSpace ?? CGColorSpaceCreateDeviceRGB()
@@ -360,11 +379,27 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
             try context.writeJPEGRepresentation(
                 of: rotated, to: renderURL, colorSpace: colorSpace)
         }
+    }
 
-        try await PHPhotoLibrary.shared().performChanges {
-            PHAssetChangeRequest(for: asset).contentEditingOutput = output
+    /// Live Photo: still én gekoppelde video samen draaien via Photos' eigen
+    /// render-pijplijn, zodat het resultaat een geldige Live Photo blijft.
+    private func renderRotatedLivePhoto(input: PHContentEditingInput,
+                                        to output: PHContentEditingOutput) async throws {
+        guard let context = PHLivePhotoEditingContext(livePhotoEditingInput: input) else {
+            throw CocoaError(.fileReadCorruptFile)
         }
-        changeToken &+= 1
+        context.frameProcessor = { frame, _ in
+            frame.image.oriented(.left)
+        }
+        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+            context.saveLivePhoto(to: output) { success, error in
+                if success {
+                    cont.resume()
+                } else {
+                    cont.resume(throwing: error ?? CocoaError(.fileWriteUnknown))
+                }
+            }
+        }
     }
 
     /// Async-wrapper om de callback-API van PhotoKit; haalt zo nodig het
