@@ -4,7 +4,7 @@
 
 An iOS/iPadOS app for **teardown photos**: shoot while you take something apart,
 so you know how it went back together during reassembly. For personal use.
-The app's interface is in Dutch.
+The interface is English with a full Dutch localization.
 
 ## Core idea: Photos *is* the database
 
@@ -23,19 +23,36 @@ Because of this, managing everything also works straight from the Photos app.
 ## What works
 
 - **Project list** — folders/albums under the root, sorted by latest activity
-  (newest asset). Nesting, renaming, and *delete-all* (album/folder + all its
-  photos in one action). A new project opens immediately.
+  (newest asset). Nesting, renaming (swipe or tap the title), and *delete-all*
+  (album/folder + all its photos in one action). Folder rows show their
+  contents split by kind ("1 folder, 2 albums"). A new project opens
+  immediately, and the app reopens where you left off — even after a
+  force-quit.
 - **Photo grid per album** — grouped by day with a date header (Today /
-  Yesterday / date), newest first.
+  Yesterday / date), newest first. Multi-select to delete several photos in
+  one action (one system confirmation).
+- **Rotate** — 90° counterclockwise like Photos, from the grid's long-press
+  menu or the viewer. Non-destructive via the Photos edit pipeline: the
+  original is kept and Revert in Photos still works. Renders explicit 8-bit
+  SDR output (HDR camera photos would otherwise be rejected by Photos).
 - **Built-in camera** (AVFoundation) — no "Use Photo" confirmation, shoots
   straight through, the album stays active (next photo is one tap). Writes the
-  **geotag** onto each photo itself. Shutter gives a flash + haptic.
-- **Photo viewer** — pinch-zoom, double-tap, panning; delete a single photo.
+  **geotag** onto each photo itself. Shutter gives a flash + haptic. Swipe
+  down to close (photos are already saved).
+- **Photo viewer** — pinch-zoom, double-tap, panning; rotate and delete in
+  Photos-style action bubbles; swipe down to close.
+- **Quick actions** — long-press the app icon for "photo in <project>"
+  shortcuts (active + recent projects), and an App Intent for Shortcuts, Siri
+  and the Action Button. Both jump straight into the album and open the
+  camera.
+- **English + Dutch** — English is the default; Dutch follows the system
+  language via String Catalogs.
 
 ## On the roadmap
 
-- Quick actions: icon shortcuts, an App Intent + ControlWidget "photo in the
-  active project", a lock-screen button and `LockedCameraCapture` (iOS 18).
+- ControlWidget (Control Center / lock-screen button) and
+  `LockedCameraCapture` on the existing App Intent — waiting on the extension
+  targets.
 - Optionally defer the location prompt until the first geotag moment.
 
 See [`SPEC.md`](SPEC.md) for the full concept and the architecture decisions
@@ -47,8 +64,8 @@ made along the way.
 - No external dependencies, no custom datastore
 - **PhotoKit** for structure and assets, **AVFoundation** for the camera,
   **CoreLocation** for the geotag
-- Own state: just the "active project" (UserDefaults)
-- Asset/album references use cloud identifiers, never `localIdentifier`
+- Own state: the active project and the open navigation path (UserDefaults,
+  per device — deliberately `localIdentifier`-based, nothing syncs)
 
 Permissions: full Photos access (`.readWrite`), camera, and location.
 
