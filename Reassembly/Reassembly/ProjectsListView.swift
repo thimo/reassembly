@@ -226,12 +226,8 @@ private struct ProjectsLevel: View {
             // de kaart en met eigen witruimte; scrolt mee met de inhoud.
             if parent == nil {
                 Section {
-                    Text("Re-assembly is the reverse of disassembly.")
-                        .font(.footnote)
-                        .italic()
-                        .foregroundStyle(.secondary)
+                    tagline
                         .frame(maxWidth: .infinity)
-                        .multilineTextAlignment(.center)
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
                 }
@@ -240,16 +236,35 @@ private struct ProjectsLevel: View {
     }
 
     private var emptyState: some View {
-        ContentUnavailableView {
-            Label(parent == nil ? "No Projects Yet" : "Empty Folder",
-                  systemImage: "shippingbox")
-        } description: {
-            Text("Create an album for your teardown photos, or a folder to group projects.")
-        } actions: {
-            Button("New Album") { newName = ""; showingNewAlbum = true }
-                .buttonStyle(.borderedProminent)
-            Button("New Folder") { newName = ""; showingNewFolder = true }
+        // Inhoud + tagline als één gecentreerd blok: de inhoud komt daardoor
+        // iets hoger te staan dan puur gecentreerd, met de tagline op afstand
+        // eronder.
+        VStack(spacing: 48) {
+            ContentUnavailableView {
+                Label(parent == nil ? "No Projects Yet" : "Empty Folder",
+                      systemImage: "shippingbox")
+            } description: {
+                Text("Create an album for your teardown photos, or a folder to group projects.")
+            } actions: {
+                Button("New Album") { newName = ""; showingNewAlbum = true }
+                    .buttonStyle(.borderedProminent)
+                Button("New Folder") { newName = ""; showingNewFolder = true }
+            }
+            .fixedSize(horizontal: false, vertical: true)
+
+            if parent == nil {
+                tagline
+            }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var tagline: some View {
+        Text("Re-assembly is the reverse of disassembly.")
+            .font(.footnote)
+            .italic()
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
     }
 
     private enum NewKind { case album, folder }
