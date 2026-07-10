@@ -163,11 +163,14 @@ private struct ProjectsLevel: View {
 
     private var addButton: some View {
         Menu {
-            Button("New Album", systemImage: "photo.stack") {
-                newName = ""; showingNewAlbum = true
-            }
+            // Folder eerst gedeclareerd: dit menu klapt omhoog en toont het
+            // eerste item onderaan, dus visueel staat Album bovenaan — zelfde
+            // volgorde als de lege-staat-knoppen.
             Button("New Folder", systemImage: "folder") {
                 newName = ""; showingNewFolder = true
+            }
+            Button("New Album", systemImage: "photo.stack") {
+                newName = ""; showingNewAlbum = true
             }
         } label: {
             Label("Add", systemImage: "plus")
@@ -250,6 +253,8 @@ private struct ProjectsLevel: View {
                     .buttonStyle(.borderedProminent)
                 Button("New Folder") { newName = ""; showingNewFolder = true }
             }
+            // Volwaardige CTA-maat, zoals Apple's eigen onboarding-knoppen.
+            .controlSize(.large)
             .fixedSize(horizontal: false, vertical: true)
             Spacer()
 

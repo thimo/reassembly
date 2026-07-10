@@ -44,6 +44,8 @@ private struct PermissionGate: View {
 
             action
         }
+        // Zelfde volwaardige CTA-maat als de lege-staat-knoppen.
+        .controlSize(.large)
         .padding(40)
     }
 
