@@ -333,7 +333,12 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
     /// de Photos-app blijft werken. Eerdere bewerkingen worden ingebakken (wij
     /// lezen andermans adjustment data niet).
     func rotateCounterclockwise(_ asset: PHAsset) async throws {
-        let input = try await editingInput(for: asset)
+        let isLive = asset.mediaSubtypes.contains(.photoLive)
+
+        let input: PHContentEditingInput
+        do { input = try await editingInput(for: asset) }
+        catch { throw RotationError(stage: "origineel ophalen", underlying: error) }
+
         let output = PHContentEditingOutput(contentEditingInput: input)
         output.adjustmentData = PHAdjustmentData(
             formatIdentifier: "nl.defrog.reassembly.rotate",
@@ -344,16 +349,35 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         // stilstaand beeld aanleveren keurt Photos af (3302 invalidResource).
         // Foto's uit de standaard Camera-app zijn Live; die van onze eigen
         // camera niet.
-        if asset.mediaSubtypes.contains(.photoLive) {
-            try await renderRotatedLivePhoto(input: input, to: output)
+        if isLive {
+            do { try await renderRotatedLivePhoto(input: input, to: output) }
+            catch { throw RotationError(stage: "Live Photo renderen", underlying: error) }
         } else {
-            try renderRotatedStill(input: input, to: output)
+            do { try renderRotatedStill(input: input, to: output) }
+            catch { throw RotationError(stage: "foto renderen", underlying: error) }
         }
 
-        try await PHPhotoLibrary.shared().performChanges {
-            PHAssetChangeRequest(for: asset).contentEditingOutput = output
+        do {
+            try await PHPhotoLibrary.shared().performChanges {
+                PHAssetChangeRequest(for: asset).contentEditingOutput = output
+            }
+        } catch {
+            throw RotationError(stage: isLive ? "opslaan (live)" : "opslaan (still)",
+                                underlying: error)
         }
         changeToken &+= 1
+    }
+
+    /// Vertelt in de foutmelding wélke stap faalde plus de kale foutcode —
+    /// onmisbaar bij het debuggen op afstand via screenshots.
+    struct RotationError: LocalizedError {
+        let stage: String
+        let underlying: Error
+
+        var errorDescription: String? {
+            let ns = underlying as NSError
+            return "Stap '\(stage)': \(ns.localizedDescription) [\(ns.domain) \(ns.code)]"
+        }
     }
 
     /// Stilstaande foto: vol beeld inladen, draaien, wegschrijven in het

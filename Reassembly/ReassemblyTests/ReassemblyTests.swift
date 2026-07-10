@@ -33,6 +33,45 @@ struct ReassemblyTests {
         try await assertRotateSwapsDimensions(data: Data(contentsOf: url))
     }
 
+    /// Zelfde, maar met een Live Photo — het pad via PHLivePhotoEditingContext.
+    /// Reproduceert het toestel-scenario (foto's uit de standaard Camera-app
+    /// zijn Live) dat op het toestel met 3302 faalde.
+    @Test @MainActor func rotateSwapsDimensionsForLivePhoto() async throws {
+        let store = PhotoLibraryStore()
+        try #require(store.hasFullAccess, "Testsimulator heeft geen Photos-toegang")
+
+        let (stillURL, videoURL) = try await LivePhotoFixture.make()
+        defer {
+            try? FileManager.default.removeItem(at: stillURL)
+            try? FileManager.default.removeItem(at: videoURL)
+        }
+
+        var id: String?
+        try await PHPhotoLibrary.shared().performChanges {
+            let request = PHAssetCreationRequest.forAsset()
+            request.addResource(with: .photo, fileURL: stillURL, options: nil)
+            request.addResource(with: .pairedVideo, fileURL: videoURL, options: nil)
+            id = request.placeholderForCreatedAsset?.localIdentifier
+        }
+        let assetID = try #require(id)
+        let asset = try #require(PHAsset
+            .fetchAssets(withLocalIdentifiers: [assetID], options: nil).firstObject)
+        try #require(asset.mediaSubtypes.contains(.photoLive),
+                     "Fixture is geen Live Photo geworden")
+        let width = asset.pixelWidth
+        let height = asset.pixelHeight
+        #expect(width > height, "Testfoto hoort liggend te zijn")
+
+        try await store.rotateCounterclockwise(asset)
+
+        let rotated = try #require(PHAsset
+            .fetchAssets(withLocalIdentifiers: [assetID], options: nil).firstObject)
+        #expect(rotated.pixelWidth == height, "Breedte niet gewisseld na rotatie")
+        #expect(rotated.pixelHeight == width, "Hoogte niet gewisseld na rotatie")
+        #expect(rotated.mediaSubtypes.contains(.photoLive),
+                "Foto is z'n liveness kwijt na rotatie")
+    }
+
     /// Liggende testfoto (400×300) zodat de wissel meetbaar is. Scale expliciet
     /// op 1: de renderer volgt anders de schermschaal van de simulator.
     @MainActor
