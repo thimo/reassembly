@@ -360,7 +360,9 @@ struct CameraView: View {
     }
 
     private var bottomBar: some View {
-        VStack(spacing: 18) {
+        // Ruime afstand tussen zoomrondjes en sluiter: zo staan de rondjes
+        // duidelijk bínnen de foto in plaats van op de rand.
+        VStack(spacing: 30) {
             // Zoomknoppen zoals de Camera-app: preset per lens, de actieve is
             // geel en toont tijdens pinchen de werkelijke waarde.
             if !model.zoomPresets.isEmpty {
