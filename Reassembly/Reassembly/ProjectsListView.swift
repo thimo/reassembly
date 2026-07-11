@@ -409,10 +409,11 @@ private struct AlbumStack: View {
                 // Kaarten iets kleiner dan het vak en de achterste twee omhoog
                 // geschoven + gedraaid, zodat ze zichtbaar uitsteken — enkel
                 // rotatie verdwijnt achter de afgeronde hoeken van de bovenste.
+                // Iets kleiner dan het 52-vak zodat er lucht om de stapel blijft.
                 ForEach(Array(assets.enumerated().reversed()),
                         id: \.element.localIdentifier) { index, asset in
                     RowThumb(asset: asset)
-                        .frame(width: 44, height: 44)
+                        .frame(width: 40, height: 40)
                         .rotationEffect(.degrees(rotation(for: index)))
                         .offset(offset(for: index))
                 }
@@ -430,9 +431,9 @@ private struct AlbumStack: View {
 
     private func offset(for index: Int) -> CGSize {
         switch index {
-        case 1: CGSize(width: -2, height: -4)
-        case 2: CGSize(width: 3, height: -6)
-        default: CGSize(width: 0, height: 4)
+        case 1: CGSize(width: -2, height: -3)
+        case 2: CGSize(width: 3, height: -5)
+        default: CGSize(width: 0, height: 3)
         }
     }
 }
