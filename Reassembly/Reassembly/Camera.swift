@@ -420,17 +420,25 @@ struct CameraPreview: UIViewRepresentable {
     }
 }
 
+/// Het aspect-fit-videokader binnen de gegeven ruimte (foto-preset is 4:3;
+/// portret toont 3:4). Gedeeld door raster en status-overlay.
+func viewfinderRect(in size: CGSize) -> CGRect {
+    let aspect: CGFloat = size.width < size.height ? 3.0 / 4.0 : 4.0 / 3.0
+    let width = min(size.width, size.height * aspect)
+    let height = width / aspect
+    return CGRect(x: (size.width - width) / 2,
+                  y: (size.height - height) / 2,
+                  width: width, height: height)
+}
+
 /// Regel-van-derden-raster over het (aspect-fit) videobeeld.
 private struct GridOverlay: View {
     var body: some View {
         GeometryReader { geo in
-            let size = geo.size
-            // Foto-preset is 4:3; portret toont 3:4.
-            let aspect: CGFloat = size.width < size.height ? 3.0 / 4.0 : 4.0 / 3.0
-            let width = min(size.width, size.height * aspect)
-            let height = width / aspect
-            let origin = CGPoint(x: (size.width - width) / 2,
-                                 y: (size.height - height) / 2)
+            let frame = viewfinderRect(in: geo.size)
+            let width = frame.width
+            let height = frame.height
+            let origin = frame.origin
             Path { path in
                 for i in 1...2 {
                     let x = origin.x + width * CGFloat(i) / 3
@@ -494,29 +502,36 @@ struct CameraView: View {
                         .allowsHitTesting(false)
                 }
             }
-            .overlay(alignment: .top) {
-                VStack(spacing: 8) {
-                    if model.focusLocked {
-                        Text("AE/AF Lock")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.black)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(.yellow, in: Capsule())
+            .overlay {
+                // Bovenin het échte fotokader (aspect-fit), zoals de Camera-app
+                // z'n statusmeldingen toont — niet tegen de schermrand.
+                GeometryReader { geo in
+                    let frame = viewfinderRect(in: geo.size)
+                    VStack(spacing: 8) {
+                        if model.focusLocked {
+                            Text("AE/AF Lock")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.black)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(.yellow, in: Capsule())
+                        }
+                        // Statusbevestiging bij het wisselen van de flits:
+                        // gele tekst in een donkere pill.
+                        if let statusMessage {
+                            Text(statusMessage)
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(.yellow)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(.black.opacity(0.6), in: Capsule())
+                                .transition(.opacity)
+                        }
                     }
-                    // Statusbevestiging bij het wisselen van de flits, zoals
-                    // de Camera-app: gele tekst in een donkere pill.
-                    if let statusMessage {
-                        Text(statusMessage)
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.yellow)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(.black.opacity(0.6), in: Capsule())
-                            .transition(.opacity)
-                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, frame.minY + 16)
                 }
-                .padding(.top, 70)
+                .allowsHitTesting(false)
             }
             .ignoresSafeArea()
 
