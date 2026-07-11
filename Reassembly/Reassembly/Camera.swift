@@ -364,13 +364,14 @@ struct CameraView: View {
             // Zoomknoppen zoals de Camera-app: preset per lens, de actieve is
             // geel en toont tijdens pinchen de werkelijke waarde.
             if !model.zoomPresets.isEmpty {
-                HStack(spacing: 2) {
+                HStack(spacing: 0) {
                     ForEach(model.zoomPresets) { preset in
                         zoomButton(preset)
                     }
                 }
-                .padding(3)
-                .glassEffect(.regular, in: .capsule)
+                .padding(4)
+                // Donkere capsule zoals de Camera-app, geen licht glas.
+                .background(.black.opacity(0.35), in: Capsule())
             }
 
             bottomControls
@@ -380,15 +381,23 @@ struct CameraView: View {
     private func zoomButton(_ preset: CameraModel.ZoomPreset) -> some View {
         let isActive = model.activeZoomPreset == preset
         return Button { model.select(preset) } label: {
-            Text(isActive
-                 ? model.displayZoom.formatted(.number.precision(.fractionLength(0...1))) + "×"
-                 : preset.display.formatted(.number.precision(.fractionLength(0...1))))
-                .font(.caption.weight(.bold))
-                .foregroundStyle(isActive ? .yellow : .white)
-                .frame(width: isActive ? 40 : 30, height: isActive ? 40 : 30)
-                .background(.black.opacity(isActive ? 0.45 : 0.25), in: Circle())
+            // Zoals de Camera-app: inactief = kaal wit cijfer, actief = grotere
+            // donkere cirkel met geel cijfer + "×".
+            Text(zoomText(isActive ? model.displayZoom : preset.display, active: isActive))
+                .font(.system(size: isActive ? 14 : 12, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(isActive ? Color.yellow : .white)
+                .frame(width: isActive ? 38 : 28, height: isActive ? 38 : 28)
+                .background(.black.opacity(isActive ? 0.5 : 0), in: Circle())
         }
         .animation(.snappy(duration: 0.15), value: isActive)
+    }
+
+    /// ",5" in plaats van "0,5" (Camera-app-stijl); alleen actief krijgt "×".
+    private func zoomText(_ value: Double, active: Bool) -> String {
+        var text = value.formatted(.number.precision(.fractionLength(0...1)))
+        if value < 1 { text = String(text.dropFirst()) }
+        return active ? text + "×" : text
     }
 
     private var bottomControls: some View {
