@@ -401,13 +401,25 @@ struct CameraPreview: UIViewRepresentable {
 
         @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
             let point = gesture.location(in: self)
-            onTap?(videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: point), point)
+            guard let devicePoint = devicePointInsideFrame(for: point) else { return }
+            onTap?(devicePoint, point)
         }
 
         @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
             guard gesture.state == .began else { return }
             let point = gesture.location(in: self)
-            onLongPress?(videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: point), point)
+            guard let devicePoint = devicePointInsideFrame(for: point) else { return }
+            onLongPress?(devicePoint, point)
+        }
+
+        /// nil buiten het videobeeld: de preview is aspect-fit, dus tikken op
+        /// de zwarte balken horen geen focuspunt te zetten.
+        private func devicePointInsideFrame(for point: CGPoint) -> CGPoint? {
+            let devicePoint = videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: point)
+            guard (0...1).contains(devicePoint.x), (0...1).contains(devicePoint.y) else {
+                return nil
+            }
+            return devicePoint
         }
     }
 }
