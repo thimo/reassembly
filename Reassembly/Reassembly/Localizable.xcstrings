@@ -131,16 +131,6 @@
         }
       }
     },
-    "Auto": {
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Automatisch"
-          }
-        }
-      }
-    },
     "Camera Unavailable": {
       "localizations": {
         "nl": {
@@ -231,12 +221,32 @@
         }
       }
     },
-    "Flash": {
+    "Flash Auto": {
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Flits"
+            "value": "Flits automatisch"
+          }
+        }
+      }
+    },
+    "Flash Off": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flits uit"
+          }
+        }
+      }
+    },
+    "Flash On": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flits aan"
           }
         }
       }
@@ -337,26 +347,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "OK"
-          }
-        }
-      }
-    },
-    "Off": {
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Uit"
-          }
-        }
-      }
-    },
-    "On": {
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aan"
           }
         }
       }

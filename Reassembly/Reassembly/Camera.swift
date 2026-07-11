@@ -458,6 +458,8 @@ struct CameraView: View {
     @State private var isZooming = false
     @State private var focusPoint: CGPoint?
     @State private var showingLastCapture = false
+    @State private var statusMessage: String?
+    @State private var statusToken = 0
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -493,15 +495,28 @@ struct CameraView: View {
                 }
             }
             .overlay(alignment: .top) {
-                if model.focusLocked {
-                    Text("AE/AF Lock")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.black)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(.yellow, in: Capsule())
-                        .padding(.top, 64)
+                VStack(spacing: 8) {
+                    if model.focusLocked {
+                        Text("AE/AF Lock")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.black)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(.yellow, in: Capsule())
+                    }
+                    // Statusbevestiging bij het wisselen van de flits, zoals
+                    // de Camera-app: gele tekst in een donkere pill.
+                    if let statusMessage {
+                        Text(statusMessage)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.yellow)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(.black.opacity(0.6), in: Capsule())
+                            .transition(.opacity)
+                    }
                 }
+                .padding(.top, 70)
             }
             .ignoresSafeArea()
 
@@ -602,25 +617,32 @@ struct CameraView: View {
                 Spacer()
 
                 // Flits altijd zichtbaar (één tik, status af te lezen); de
-                // rest achter het ⋯-menu. Samen in één pill.
-                HStack(spacing: 0) {
-                    Button { cycleFlash() } label: {
-                        Image(systemName: flashIcon)
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(model.flashMode == .on ? .yellow : .white)
-                            .frame(width: 44, height: 44)
-                    }
-                    Menu {
-                        Toggle("Torch", systemImage: "flashlight.on.fill", isOn: torchBinding)
-                        Toggle("Grid", systemImage: "grid", isOn: gridBinding)
-                    } label: {
-                        Image(systemName: "ellipsis")
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(model.torchOn ? .yellow : .white)
-                            .frame(width: 44, height: 44)
+                // rest achter het ⋯-menu. Elke knop z'n eigen glasvorm en de
+                // container smelt ze samen tot één pill — zo highlight het
+                // systeem bij een open menu alleen het menu-deel, niet de
+                // hele pill.
+                GlassEffectContainer(spacing: 2) {
+                    HStack(spacing: 2) {
+                        Button { cycleFlash() } label: {
+                            Image(systemName: flashIcon)
+                                .font(.title3.weight(.semibold))
+                                .foregroundStyle(model.flashMode == .on ? .yellow : .white)
+                                .frame(width: 44, height: 44)
+                        }
+                        .glassEffect(.regular.interactive(), in: .circle)
+
+                        Menu {
+                            Toggle("Torch", systemImage: "flashlight.on.fill", isOn: torchBinding)
+                            Toggle("Grid", systemImage: "grid", isOn: gridBinding)
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .font(.title3.weight(.semibold))
+                                .foregroundStyle(model.torchOn ? .yellow : .white)
+                                .frame(width: 44, height: 44)
+                        }
+                        .glassEffect(.regular.interactive(), in: .circle)
                     }
                 }
-                .glassEffect(.regular, in: .capsule)
             }
 
             Text(title)
@@ -641,6 +663,25 @@ struct CameraView: View {
         default: .auto
         }
         model.setFlash(next)
+        let status: String = switch next {
+        case .on: String(localized: "Flash On")
+        case .off: String(localized: "Flash Off")
+        default: String(localized: "Flash Auto")
+        }
+        showStatus(status)
+    }
+
+    /// Korte statusbevestiging; verdwijnt vanzelf, en rap doorklikken verlengt
+    /// gewoon (token voorkomt dat een oude timer de nieuwe tekst wist).
+    private func showStatus(_ text: String) {
+        statusToken += 1
+        let token = statusToken
+        withAnimation(.snappy(duration: 0.15)) { statusMessage = text }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            if statusToken == token {
+                withAnimation(.easeOut(duration: 0.3)) { statusMessage = nil }
+            }
+        }
     }
 
     /// auto → A-bliksem, geforceerd aan → gele bliksem, uit → doorgestreept.
