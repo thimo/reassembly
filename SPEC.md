@@ -68,8 +68,11 @@ Let op: assets verdwijnen library-breed, ook als ze in een ander album zitten.
 
 ## Stijl
 
-Inspiratie: **NetNewsWire** — netjes en simpel door radicaal platform-native te
-blijven. Concreet voor Reassembly:
+**Eerste vraag bij elk ontwerpbesluit: hoe doet de betreffende Apple-app het?**
+(Photos voor grids/viewer/stapels, Camera voor de camera, Files/Notes voor
+lijsten.) Dat gedrag en die maatvoering kopiëren; pas eigen smaak toepassen
+waar Apple geen antwoord heeft. Tweede referentie: **NetNewsWire** — netjes en
+simpel door radicaal platform-native te blijven. Concreet voor Reassembly:
 
 - Standaard SwiftUI-controls, SF Symbols, systeemkleuren en -materialen;
   geen custom chrome (uitzondering: de cameraknop, dé kernactie)

@@ -25,6 +25,12 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
     private var configured = false
     private var device: AVCaptureDevice?
     private var zoomAtGestureStart: CGFloat = 1
+    /// Zoomfactor die "1×" voorstelt (bij een virtuele dual-wide-lens is de
+    /// kale factor 1.0 juist de ultrawide, dus 0.5×).
+    private var oneXFactor: CGFloat = 1
+
+    /// Zoomniveau zoals de gebruiker het kent (0.5×, 1×, 2.3×).
+    private(set) var displayZoom: Double = 1
 
     private(set) var capturedCount = 0
     private(set) var lastThumbnail: UIImage?
@@ -58,6 +64,7 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
         let target = min(
             max(zoomAtGestureStart * scale, device.minAvailableVideoZoomFactor),
             min(device.maxAvailableVideoZoomFactor, 16))
+        displayZoom = target / oneXFactor
         sessionQueue.async {
             guard (try? device.lockForConfiguration()) != nil else { return }
             device.videoZoomFactor = target
@@ -100,12 +107,16 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
            let input = try? AVCaptureDeviceInput(device: device),
            session.canAddInput(input) {
             session.addInput(input)
-            Task { @MainActor in self.device = device }
             // Virtuele lens start op de ultrawide (0.5×); naar 1× springen.
-            if let oneX = device.virtualDeviceSwitchOverVideoZoomFactors.first,
-               (try? device.lockForConfiguration()) != nil {
-                device.videoZoomFactor = CGFloat(truncating: oneX)
+            let oneX = device.virtualDeviceSwitchOverVideoZoomFactors.first
+                .map { CGFloat(truncating: $0) } ?? 1
+            if oneX != 1, (try? device.lockForConfiguration()) != nil {
+                device.videoZoomFactor = oneX
                 device.unlockForConfiguration()
+            }
+            Task { @MainActor in
+                self.device = device
+                self.oneXFactor = oneX
             }
         }
         if session.canAddOutput(photoOutput) {
@@ -302,6 +313,25 @@ struct CameraView: View {
     }
 
     private var bottomBar: some View {
+        VStack(spacing: 14) {
+            // Zoomniveau zoals de Camera-app: klein chipje boven de sluiter.
+            Text(zoomLabel)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .glassEffect(.regular, in: .capsule)
+
+            bottomControls
+        }
+    }
+
+    private var zoomLabel: String {
+        model.displayZoom
+            .formatted(.number.precision(.fractionLength(0...1))) + "×"
+    }
+
+    private var bottomControls: some View {
         HStack {
             Group {
                 if let thumb = model.lastThumbnail {
