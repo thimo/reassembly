@@ -37,7 +37,10 @@ weggooien) werkt dus ook vanuit de Photos-app.
      weinig winst. Auto-open maakt de hele kwestie moot; besluit: niet doen.
 2. **Album** — fotogrid, nieuwste bovenaan, prominente camera-knop.
 3. **Camera** — AVFoundation; het geselecteerde album blijft actief zodat een
-   volgende foto één tik is.
+   volgende foto één tik is. Pinch-zoom (0.5×–16× via dual-wide) en flits
+   (auto/aan/uit, keuze blijft bewaard). Video is bewust uitgesteld: opnemen
+   is makkelijk, maar grid en viewer zijn foto-only (afspelen, badges,
+   draaien/verwijderen) — eigen ronde waard.
 
 ### Quick actions
 
