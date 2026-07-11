@@ -207,14 +207,14 @@ struct CameraView: View {
                     .font(.title2.weight(.semibold))
                     .foregroundStyle(.white)
                     .padding(12)
-                    .background(.black.opacity(0.35), in: Circle())
             }
+            .glassEffect(.regular.interactive(), in: .circle)
             Spacer()
             Text(title)
                 .font(.headline)
                 .foregroundStyle(.white)
                 .padding(.horizontal, 14).padding(.vertical, 7)
-                .background(.black.opacity(0.35), in: Capsule())
+                .glassEffect(.regular, in: .capsule)
             Spacer()
             Color.clear.frame(width: 44, height: 44)
         }

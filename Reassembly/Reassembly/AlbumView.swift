@@ -160,11 +160,11 @@ struct AlbumView: View {
         } label: {
             Image(systemName: "camera.fill")
                 .font(.title2)
-                .foregroundStyle(.white)
                 .frame(width: 66, height: 66)
-                .background(Circle().fill(Color.accentColor))
-                .shadow(radius: 8, y: 4)
         }
+        // Gekleurd Liquid Glass in plaats van een platte accentcirkel.
+        .buttonStyle(.glassProminent)
+        .buttonBorderShape(.circle)
         .padding(.bottom, 10)
         .fullScreenCover(isPresented: $showingCamera) {
             CameraView(store: store, album: album, title: title)
@@ -238,9 +238,13 @@ struct AlbumView: View {
                 }
             }
         }
-        .padding(.horizontal)
+        .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .background(.regularMaterial)
+        // Zwevende glascapsule in plaats van een material-balk over de volle
+        // breedte.
+        .glassEffect(.regular, in: .capsule)
+        .padding(.horizontal)
+        .padding(.bottom, 4)
     }
 
     private func tap(_ asset: PHAsset) {
@@ -468,15 +472,15 @@ private struct PhotoViewer: View {
         .onChange(of: index) { prefetch() }
     }
 
-    /// Actieknop in een glasbubble, in de donkere smaak van de zwarte viewer —
-    /// ongeacht het systeemthema.
+    /// Actieknop in een Liquid Glass-bubble, in de donkere smaak van de zwarte
+    /// viewer — ongeacht het systeemthema.
     private func bubbleButton(_ systemName: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.title3.weight(.semibold))
                 .frame(width: 44, height: 44)
         }
-        .background(.regularMaterial, in: Circle())
+        .glassEffect(.regular.interactive(), in: .circle)
         .foregroundStyle(.white)
         .environment(\.colorScheme, .dark)
     }
