@@ -257,8 +257,8 @@ private struct ProjectsLevel: View {
                 Button("New Folder") { newName = ""; showingNewFolder = true }
                     .controlSize(.large)
                     // De grote controlSize geeft beide knoppen extra padding;
-                    // dat stapelt tussen de twee op. Ietsje terugtrekken.
-                    .padding(.top, -6)
+                    // dat stapelt tussen de twee op. Stevig terugtrekken.
+                    .padding(.top, -20)
             }
             .fixedSize(horizontal: false, vertical: true)
             Spacer()
@@ -353,10 +353,10 @@ private struct ProjectRow: View {
                 Image(systemName: "folder")
                     .font(.title2)
                     .foregroundStyle(.tint)
-                    .frame(width: 52, height: 52)
+                    .frame(width: 44, height: 44)
             } else {
                 AlbumStack(assets: project.coverAssets)
-                    .frame(width: 52, height: 52)
+                    .frame(width: 44, height: 44)
             }
 
             VStack(alignment: .leading, spacing: 2) {
@@ -369,7 +369,7 @@ private struct ProjectRow: View {
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 2)
     }
 
     private var subtitle: String? {
@@ -410,7 +410,7 @@ private struct AlbumStack: View {
                 ForEach(Array(assets.enumerated().reversed()),
                         id: \.element.localIdentifier) { index, asset in
                     RowThumb(asset: asset)
-                        .frame(width: 44, height: 44)
+                        .frame(width: 36, height: 36)
                         .rotationEffect(.degrees(rotation(for: index)))
                         .offset(offset(for: index))
                 }
@@ -428,9 +428,9 @@ private struct AlbumStack: View {
 
     private func offset(for index: Int) -> CGSize {
         switch index {
-        case 1: CGSize(width: -2, height: -4)
-        case 2: CGSize(width: 3, height: -6)
-        default: CGSize(width: 0, height: 4)
+        case 1: CGSize(width: -2, height: -3)
+        case 2: CGSize(width: 2, height: -5)
+        default: CGSize(width: 0, height: 3)
         }
     }
 }
