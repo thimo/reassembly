@@ -392,10 +392,9 @@ struct CameraView: View {
         .animation(.snappy(duration: 0.15), value: isActive)
     }
 
-    /// ",5" in plaats van "0,5" (Camera-app-stijl); alleen actief krijgt "×".
+    /// Gewoon "0,5" — voorloopnul blijft; alleen de actieve knop krijgt "×".
     private func zoomText(_ value: Double, active: Bool) -> String {
-        var text = value.formatted(.number.precision(.fractionLength(0...1)))
-        if value < 1 { text = String(text.dropFirst()) }
+        let text = value.formatted(.number.precision(.fractionLength(0...1)))
         return active ? text + "×" : text
     }
 
