@@ -451,7 +451,6 @@ private struct GridOverlay: View {
 struct CameraView: View {
     let store: PhotoLibraryStore
     let album: PHAssetCollection
-    let title: String
 
     @State private var model = CameraModel()
     @State private var flash = false
@@ -605,8 +604,9 @@ struct CameraView: View {
     }
 
     private var topBar: some View {
-        ZStack {
-            HStack(spacing: 8) {
+        // Geen albumtitel: de Camera-app heeft er ook geen, en je komt altijd
+        // vanuit het album hier — de uitklap-pill heeft de ruimte nodig.
+        HStack(spacing: 8) {
                 Button { dismiss() } label: {
                     Image(systemName: "chevron.down")
                         .font(.title2.weight(.semibold))
@@ -651,15 +651,6 @@ struct CameraView: View {
                     }
                 }
                 .glassEffect(.regular, in: .capsule)
-            }
-
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(.white)
-                .lineLimit(1)
-                .padding(.horizontal, 14).padding(.vertical, 7)
-                .glassEffect(.regular, in: .capsule)
-                .frame(maxWidth: 170)
         }
         .padding()
     }

@@ -176,7 +176,7 @@ struct AlbumView: View {
         .buttonBorderShape(.circle)
         .padding(.bottom, 10)
         .fullScreenCover(isPresented: $showingCamera) {
-            CameraView(store: store, album: album, title: title)
+            CameraView(store: store, album: album)
         }
         .alert("Camera Unavailable", isPresented: $cameraUnavailable) {
             Button("OK", role: .cancel) {}
