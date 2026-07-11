@@ -171,13 +171,9 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
             rawValue: UserDefaults.standard.integer(forKey: "flashMode")) ?? .auto
     }()
 
-    func cycleFlash() {
-        flashMode = switch flashMode {
-        case .auto: .on
-        case .on: .off
-        default: .auto
-        }
-        UserDefaults.standard.set(flashMode.rawValue, forKey: "flashMode")
+    func setFlash(_ mode: AVCaptureDevice.FlashMode) {
+        flashMode = mode
+        UserDefaults.standard.set(mode.rawValue, forKey: "flashMode")
     }
 
     // MARK: - Zoom
@@ -605,18 +601,24 @@ struct CameraView: View {
 
                 Spacer()
 
-                // Acties samen in één pill, zoals Photos ze groepeert.
-                HStack(spacing: 0) {
-                    topBarButton("grid", active: model.showGrid) { model.toggleGrid() }
-                    topBarButton("flashlight.on.fill", active: model.torchOn) { model.toggleTorch() }
-                    Button { model.cycleFlash() } label: {
-                        Image(systemName: flashIcon)
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(model.flashMode == .on ? .yellow : .white)
-                            .frame(width: 44, height: 44)
+                // Eén menu met alle opties; het icoon kleurt geel zodra er
+                // iets actiefs in zit (zaklamp aan / flits geforceerd).
+                Menu {
+                    Picker("Flash", selection: flashBinding) {
+                        Label("Auto", systemImage: "bolt.badge.automatic").tag(AVCaptureDevice.FlashMode.auto)
+                        Label("On", systemImage: "bolt.fill").tag(AVCaptureDevice.FlashMode.on)
+                        Label("Off", systemImage: "bolt.slash").tag(AVCaptureDevice.FlashMode.off)
                     }
+                    .pickerStyle(.menu)
+                    Toggle("Torch", systemImage: "flashlight.on.fill", isOn: torchBinding)
+                    Toggle("Grid", systemImage: "grid", isOn: gridBinding)
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(model.torchOn || model.flashMode == .on ? .yellow : .white)
+                        .frame(width: 44, height: 44)
                 }
-                .glassEffect(.regular, in: .capsule)
+                .glassEffect(.regular.interactive(), in: .circle)
             }
 
             Text(title)
@@ -630,24 +632,16 @@ struct CameraView: View {
         .padding()
     }
 
-    /// Knop binnen de acties-pill; de pill zelf levert het glas.
-    private func topBarButton(_ systemName: String, active: Bool,
-                              action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemName)
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(active ? .yellow : .white)
-                .frame(width: 44, height: 44)
-        }
+    private var flashBinding: Binding<AVCaptureDevice.FlashMode> {
+        Binding(get: { model.flashMode }, set: { model.setFlash($0) })
     }
 
-    /// auto → A-bliksem, geforceerd aan → gele bliksem, uit → doorgestreept.
-    private var flashIcon: String {
-        switch model.flashMode {
-        case .on: "bolt.fill"
-        case .off: "bolt.slash.fill"
-        default: "bolt.badge.a.fill"
-        }
+    private var torchBinding: Binding<Bool> {
+        Binding(get: { model.torchOn }, set: { _ in model.toggleTorch() })
+    }
+
+    private var gridBinding: Binding<Bool> {
+        Binding(get: { model.showGrid }, set: { _ in model.toggleGrid() })
     }
 
     private var bottomBar: some View {

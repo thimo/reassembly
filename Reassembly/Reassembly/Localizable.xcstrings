@@ -131,6 +131,16 @@
         }
       }
     },
+    "Auto": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatisch"
+          }
+        }
+      }
+    },
     "Camera Unavailable": {
       "localizations": {
         "nl": {
@@ -221,12 +231,32 @@
         }
       }
     },
+    "Flash": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flits"
+          }
+        }
+      }
+    },
     "Full access needed": {
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
             "value": "Volledige toegang nodig"
+          }
+        }
+      }
+    },
+    "Grid": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raster"
           }
         }
       }
@@ -307,6 +337,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "OK"
+          }
+        }
+      }
+    },
+    "Off": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uit"
+          }
+        }
+      }
+    },
+    "On": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aan"
           }
         }
       }
@@ -528,6 +578,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vandaag"
+          }
+        }
+      }
+    },
+    "Torch": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zaklamp"
           }
         }
       }
