@@ -430,6 +430,9 @@ private struct PhotoViewer: View {
     @State var index: Int
     @State private var errorMessage: String?
     @State private var manager = PHCachingImageManager()
+    /// Laatste bladerrichting (1 = vooruit, -1 = terug) — bepaalt welke foto
+    /// je na een delete te zien krijgt.
+    @State private var browseDirection = 1
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -480,7 +483,10 @@ private struct PhotoViewer: View {
         // Buurfoto's alvast in de cache: als een buurpagina pas tijdens de
         // eerste swipe binnenkomt, reset die state-update de pager halverwege.
         .onAppear { prefetch() }
-        .onChange(of: index) { prefetch() }
+        .onChange(of: index) { oldValue, newValue in
+            browseDirection = newValue >= oldValue ? 1 : -1
+            prefetch()
+        }
     }
 
     /// Actieknop in een Liquid Glass-bubble, in de donkere smaak van de zwarte
@@ -528,7 +534,17 @@ private struct PhotoViewer: View {
         Task {
             do {
                 try await store.deleteAsset(asset)
-                dismiss()   // gelukt → sluit viewer; het grid ververst zelf
+                // Doorbladeren in plaats van sluiten: volgende of vorige foto,
+                // afhankelijk van de richting waarin je aan het swipen was.
+                let newCount = assets.count - 1
+                if newCount <= 0 {
+                    dismiss()
+                } else {
+                    // Na verwijderen schuift de array op: zelfde index = de
+                    // volgende foto; terugbladeren = index - 1.
+                    let target = browseDirection < 0 ? index - 1 : index
+                    index = min(max(target, 0), newCount - 1)
+                }
             } catch let error as PHPhotosError where error.code == .userCancelled {
                 // Gebruiker annuleerde de systeem-bevestiging — niks doen.
             } catch {
