@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%lld Photos Selected": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld foto's geselecteerd"
+          }
+        }
+      }
+    },
     "%lld albums": {
       "localizations": {
         "nl": {
@@ -27,6 +37,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld foto's"
+          }
+        }
+      }
+    },
+    "1 Photo Selected": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 foto geselecteerd"
           }
         }
       }
@@ -151,26 +171,6 @@
         }
       }
     },
-    "Delete": {
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Verwijder"
-          }
-        }
-      }
-    },
-    "Delete (%lld)": {
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Verwijder (%lld)"
-          }
-        }
-      }
-    },
     "Delete + Photos": {
       "localizations": {
         "nl": {
@@ -187,16 +187,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Verwijder foto"
-          }
-        }
-      }
-    },
-    "Deselect All": {
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Deselecteer alles"
           }
         }
       }
@@ -431,12 +421,12 @@
         }
       }
     },
-    "Select All": {
+    "Select Photos": {
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Selecteer alles"
+            "value": "Selecteer foto's"
           }
         }
       }

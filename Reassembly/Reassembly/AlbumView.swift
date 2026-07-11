@@ -56,8 +56,17 @@ struct AlbumView: View {
             }
             if !assets.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(isSelecting ? "Done" : "Select") {
-                        withAnimation { setSelecting(!isSelecting) }
+                    if isSelecting {
+                        // Kruisje in plaats van "Done", zoals Photos.
+                        Button {
+                            withAnimation { setSelecting(false) }
+                        } label: {
+                            Label("Done", systemImage: "xmark")
+                        }
+                    } else {
+                        Button("Select") {
+                            withAnimation { setSelecting(true) }
+                        }
                     }
                 }
             }
@@ -217,34 +226,36 @@ struct AlbumView: View {
         }
     }
 
+    // Zoals Photos: teller als kale tekst in het midden, prullenbak los in een
+    // glascirkel rechts. Links een balans-spacer (Photos heeft daar delen; dat
+    // hebben wij niet).
     private var selectionBar: some View {
-        HStack(spacing: 16) {
-            Button(role: .destructive, action: deleteSelected) {
-                Label(
-                    selection.isEmpty ? "Delete" : "Delete (\(selection.count))",
-                    systemImage: "trash"
-                )
-                .font(.body.weight(.semibold))
-            }
-            .disabled(selection.isEmpty)
-
+        HStack {
+            Color.clear.frame(width: 44, height: 44)
             Spacer()
-
-            Button(selection.count == assets.count ? "Deselect All" : "Select All") {
-                if selection.count == assets.count {
-                    selection.removeAll()
-                } else {
-                    selection = Set(assets.map(\.localIdentifier))
-                }
+            Text(selectedLabel)
+                .font(.headline)
+            Spacer()
+            Button(action: deleteSelected) {
+                Image(systemName: "trash")
+                    .font(.title3.weight(.semibold))
+                    .frame(width: 44, height: 44)
             }
+            // Donker glyph zoals Photos, niet de accentkleur.
+            .tint(.primary)
+            .glassEffect(.regular.interactive(), in: .circle)
+            .disabled(selection.isEmpty)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
-        // Zwevende glascapsule in plaats van een material-balk over de volle
-        // breedte.
-        .glassEffect(.regular, in: .capsule)
         .padding(.horizontal)
         .padding(.bottom, 4)
+    }
+
+    private var selectedLabel: String {
+        switch selection.count {
+        case 0: String(localized: "Select Photos")
+        case 1: String(localized: "1 Photo Selected")
+        default: String(localized: "\(selection.count) Photos Selected")
+        }
     }
 
     private func tap(_ asset: PHAsset) {
