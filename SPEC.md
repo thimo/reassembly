@@ -37,10 +37,13 @@ weggooien) werkt dus ook vanuit de Photos-app.
      weinig winst. Auto-open maakt de hele kwestie moot; besluit: niet doen.
 2. **Album** — fotogrid, nieuwste bovenaan, prominente camera-knop.
 3. **Camera** — AVFoundation; het geselecteerde album blijft actief zodat een
-   volgende foto één tik is. Pinch-zoom (0.5×–16× via dual-wide) en flits
-   (auto/aan/uit, keuze blijft bewaard). Video is bewust uitgesteld: opnemen
-   is makkelijk, maar grid en viewer zijn foto-only (afspelen, badges,
-   draaien/verwijderen) — eigen ronde waard.
+   volgende foto één tik is. Pinch-zoom + lens-presets (à la Camera-app,
+   afgeleid van de echte lenzen incl. tele), flits én zaklamp, tik-om-scherp-
+   te-stellen met AE/AF-lock (long-press), 48 MP, volumeknop als sluiter,
+   rasterlijnen, laatste-foto-check via de duimnagel. Oriëntatie via
+   RotationCoordinator. Video is bewust uitgesteld: opnemen is makkelijk,
+   maar grid en viewer zijn foto-only (afspelen, badges, draaien/verwijderen)
+   — eigen ronde waard.
 
 ### Quick actions
 
