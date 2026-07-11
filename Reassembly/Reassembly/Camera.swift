@@ -23,10 +23,47 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
     private weak var store: PhotoLibraryStore?
     private var album: PHAssetCollection?
     private var configured = false
+    private var device: AVCaptureDevice?
+    private var zoomAtGestureStart: CGFloat = 1
 
     private(set) var capturedCount = 0
     private(set) var lastThumbnail: UIImage?
     private(set) var accessDenied = false
+
+    /// Flitsstand, onthouden tussen sessies (werkplaatsen zijn donker).
+    private(set) var flashMode: AVCaptureDevice.FlashMode = {
+        AVCaptureDevice.FlashMode(
+            rawValue: UserDefaults.standard.integer(forKey: "flashMode")) ?? .auto
+    }()
+
+    func cycleFlash() {
+        flashMode = switch flashMode {
+        case .auto: .on
+        case .on: .off
+        default: .auto
+        }
+        UserDefaults.standard.set(flashMode.rawValue, forKey: "flashMode")
+    }
+
+    // MARK: - Zoom
+
+    /// Bij het begin van een pinch: het huidige niveau als referentie.
+    func beginZoom() {
+        zoomAtGestureStart = device?.videoZoomFactor ?? 1
+    }
+
+    /// Pinch-schaal toepassen op de referentie, begrensd door wat de lens kan.
+    func zoom(scale: CGFloat) {
+        guard let device else { return }
+        let target = min(
+            max(zoomAtGestureStart * scale, device.minAvailableVideoZoomFactor),
+            min(device.maxAvailableVideoZoomFactor, 16))
+        sessionQueue.async {
+            guard (try? device.lockForConfiguration()) != nil else { return }
+            device.videoZoomFactor = target
+            device.unlockForConfiguration()
+        }
+    }
 
     func start(store: PhotoLibraryStore, album: PHAssetCollection) {
         self.store = store
@@ -54,12 +91,22 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
     private func configureSession() {
         session.beginConfiguration()
         session.sessionPreset = .photo
-        let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
+        // Dual-wide (virtueel: ultrawide + wide) geeft het hele zoombereik
+        // vanaf 0.5×; los wide-toestel als fallback.
+        let device = AVCaptureDevice.default(.builtInDualWideCamera, for: .video, position: .back)
+            ?? AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
             ?? AVCaptureDevice.default(for: .video)
         if let device,
            let input = try? AVCaptureDeviceInput(device: device),
            session.canAddInput(input) {
             session.addInput(input)
+            Task { @MainActor in self.device = device }
+            // Virtuele lens start op de ultrawide (0.5×); naar 1× springen.
+            if let oneX = device.virtualDeviceSwitchOverVideoZoomFactors.first,
+               (try? device.lockForConfiguration()) != nil {
+                device.videoZoomFactor = CGFloat(truncating: oneX)
+                device.unlockForConfiguration()
+            }
         }
         if session.canAddOutput(photoOutput) {
             session.addOutput(photoOutput)
@@ -69,8 +116,13 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
     }
 
     func capture() {
+        let flash = flashMode
         sessionQueue.async {
-            self.photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+            let settings = AVCapturePhotoSettings()
+            if self.photoOutput.supportedFlashModes.contains(flash) {
+                settings.flashMode = flash
+            }
+            self.photoOutput.capturePhoto(with: settings, delegate: self)
         }
     }
 
@@ -147,6 +199,7 @@ struct CameraView: View {
 
     @State private var model = CameraModel()
     @State private var flash = false
+    @State private var isZooming = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -179,6 +232,18 @@ struct CameraView: View {
         .task { model.start(store: store, album: album) }
         .onDisappear { model.stop() }
         .statusBarHidden()
+        // Pinch = zoomen (dual-wide lens: van 0.5× ultrawide tot 16× digitaal).
+        .simultaneousGesture(
+            MagnificationGesture()
+                .onChanged { scale in
+                    if !isZooming {
+                        isZooming = true
+                        model.beginZoom()
+                    }
+                    model.zoom(scale: scale)
+                }
+                .onEnded { _ in isZooming = false }
+        )
         // Swipe omlaag sluit de camera. Geen cancel: elke sluiterdruk is al
         // direct in het album bewaard.
         .simultaneousGesture(
@@ -216,9 +281,24 @@ struct CameraView: View {
                 .padding(.horizontal, 14).padding(.vertical, 7)
                 .glassEffect(.regular, in: .capsule)
             Spacer()
-            Color.clear.frame(width: 44, height: 44)
+            Button { model.cycleFlash() } label: {
+                Image(systemName: flashIcon)
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(model.flashMode == .on ? .yellow : .white)
+                    .frame(width: 44, height: 44)
+            }
+            .glassEffect(.regular.interactive(), in: .circle)
         }
         .padding()
+    }
+
+    /// auto → A-bliksem, geforceerd aan → gele bliksem, uit → doorgestreept.
+    private var flashIcon: String {
+        switch model.flashMode {
+        case .on: "bolt.fill"
+        case .off: "bolt.slash.fill"
+        default: "bolt.badge.a.fill"
+        }
     }
 
     private var bottomBar: some View {
