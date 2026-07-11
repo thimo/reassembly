@@ -9,6 +9,7 @@
 
 import SwiftUI
 import AVFoundation
+import AVKit
 import CoreLocation
 import Photos
 import UIKit
@@ -59,7 +60,110 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
 
     private(set) var capturedCount = 0
     private(set) var lastThumbnail: UIImage?
+    private(set) var lastCapture: UIImage?
     private(set) var accessDenied = false
+
+    // MARK: - Oriëntatie
+
+    private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
+    private var rotationObservation: NSKeyValueObservation?
+    private weak var previewLayer: AVCaptureVideoPreviewLayer?
+
+    /// Koppelt de preview-layer zodra die bestaat. De RotationCoordinator geeft
+    /// preview én capture de juiste hoek — zonder draaide het videobeeld in
+    /// landscape een extra keer 90° mee met de interface.
+    func attach(previewLayer: AVCaptureVideoPreviewLayer) {
+        self.previewLayer = previewLayer
+        setupRotationCoordinator()
+    }
+
+    private func setupRotationCoordinator() {
+        guard let device, let previewLayer else { return }
+        let coordinator = AVCaptureDevice.RotationCoordinator(
+            device: device, previewLayer: previewLayer)
+        rotationCoordinator = coordinator
+        rotationObservation = coordinator.observe(
+            \.videoRotationAngleForHorizonLevelPreview, options: [.initial, .new]
+        ) { [weak previewLayer] coordinator, _ in
+            let angle = coordinator.videoRotationAngleForHorizonLevelPreview
+            Task { @MainActor in
+                previewLayer?.connection?.videoRotationAngle = angle
+            }
+        }
+    }
+
+    // MARK: - Torch (continu licht)
+
+    private(set) var torchOn = false
+
+    func toggleTorch() {
+        guard let device, device.hasTorch else { return }
+        torchOn.toggle()
+        let on = torchOn
+        sessionQueue.async {
+            guard (try? device.lockForConfiguration()) != nil else { return }
+            device.torchMode = on ? .on : .off
+            device.unlockForConfiguration()
+        }
+    }
+
+    // MARK: - Focus
+
+    /// AE/AF-vergrendeling actief (long-press, zoals de Camera-app).
+    private(set) var focusLocked = false
+
+    /// Tik: scherpstellen + belichten op dit punt (device-coördinaten 0–1).
+    func focus(at devicePoint: CGPoint) {
+        guard let device else { return }
+        focusLocked = false
+        sessionQueue.async {
+            guard (try? device.lockForConfiguration()) != nil else { return }
+            if device.isFocusPointOfInterestSupported {
+                device.focusPointOfInterest = devicePoint
+                device.focusMode = .continuousAutoFocus
+            }
+            if device.isExposurePointOfInterestSupported {
+                device.exposurePointOfInterest = devicePoint
+                device.exposureMode = .continuousAutoExposure
+            }
+            device.unlockForConfiguration()
+        }
+    }
+
+    /// Long-press: scherpstellen + belichten op dit punt en dan vastzetten.
+    func lockFocus(at devicePoint: CGPoint) {
+        guard let device else { return }
+        focusLocked = true
+        sessionQueue.async {
+            guard (try? device.lockForConfiguration()) != nil else { return }
+            if device.isFocusPointOfInterestSupported {
+                device.focusPointOfInterest = devicePoint
+                device.focusMode = .autoFocus
+            }
+            if device.isExposurePointOfInterestSupported {
+                device.exposurePointOfInterest = devicePoint
+                device.exposureMode = .autoExpose
+            }
+            device.unlockForConfiguration()
+            // Even laten instellen, dan beide vergrendelen.
+            self.sessionQueue.asyncAfter(deadline: .now() + 0.7) {
+                guard (try? device.lockForConfiguration()) != nil else { return }
+                if device.isFocusModeSupported(.locked) { device.focusMode = .locked }
+                if device.isExposureModeSupported(.locked) { device.exposureMode = .locked }
+                device.unlockForConfiguration()
+            }
+        }
+    }
+
+    // MARK: - Raster
+
+    /// Hulplijnen (regel van derden), onthouden tussen sessies.
+    private(set) var showGrid = UserDefaults.standard.bool(forKey: "cameraGrid")
+
+    func toggleGrid() {
+        showGrid.toggle()
+        UserDefaults.standard.set(showGrid, forKey: "cameraGrid")
+    }
 
     /// Flitsstand, onthouden tussen sessies (werkplaatsen zijn donker).
     private(set) var flashMode: AVCaptureDevice.FlashMode = {
@@ -115,6 +219,7 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
 
     func stop() {
         locationProvider.stop()
+        torchOn = false
         sessionQueue.async {
             if self.session.isRunning { self.session.stopRunning() }
         }
@@ -166,10 +271,18 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
                 self.device = device
                 self.oneXFactor = oneX
                 self.zoomPresets = uniquePresets
+                // De preview kan al gekoppeld zijn vóór het device er was.
+                self.setupRotationCoordinator()
             }
         }
         if session.canAddOutput(photoOutput) {
             session.addOutput(photoOutput)
+            // Volle sensorresolutie (48 MP waar de lens het kan): bij teardown-
+            // foto's wil je achteraf diep kunnen inzoomen op detail.
+            if let dims = device?.activeFormat.supportedMaxPhotoDimensions
+                .max(by: { Int($0.width) * Int($0.height) < Int($1.width) * Int($1.height) }) {
+                photoOutput.maxPhotoDimensions = dims
+            }
         }
         session.commitConfiguration()
         configured = true
@@ -177,8 +290,16 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
 
     func capture() {
         let flash = flashMode
+        let angle = rotationCoordinator?.videoRotationAngleForHorizonLevelCapture
         sessionQueue.async {
+            // Capture-hoek meegeven: anders staan landscape-foto's gedraaid.
+            if let angle,
+               let connection = self.photoOutput.connection(with: .video),
+               connection.isVideoRotationAngleSupported(angle) {
+                connection.videoRotationAngle = angle
+            }
             let settings = AVCapturePhotoSettings()
+            settings.maxPhotoDimensions = self.photoOutput.maxPhotoDimensions
             if self.photoOutput.supportedFlashModes.contains(flash) {
                 settings.flashMode = flash
             }
@@ -198,6 +319,7 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
         try? await store.addPhoto(data: data, location: locationProvider.current, to: album)
         capturedCount += 1
         if let image = UIImage(data: data) {
+            lastCapture = image
             lastThumbnail = image.preparingThumbnail(of: CGSize(width: 120, height: 120)) ?? image
         }
     }
@@ -232,6 +354,11 @@ final class LocationProvider: NSObject, CLLocationManagerDelegate {
 
 struct CameraPreview: UIViewRepresentable {
     let session: AVCaptureSession
+    /// (devicePoint 0–1, punt in view-coördinaten)
+    let onAttach: (AVCaptureVideoPreviewLayer) -> Void
+    let onTap: (CGPoint, CGPoint) -> Void
+    let onLongPress: (CGPoint, CGPoint) -> Void
+    let onShutter: () -> Void
 
     func makeUIView(context: Context) -> PreviewView {
         let view = PreviewView()
@@ -239,6 +366,17 @@ struct CameraPreview: UIViewRepresentable {
         // resizeAspect (niet Fill): toont het héle vastgelegde frame, dus je
         // ziet exact wat op de foto komt.
         view.videoPreviewLayer.videoGravity = .resizeAspect
+        view.onTap = onTap
+        view.onLongPress = onLongPress
+
+        // Volumeknoppen als sluiter, zoals de Camera-app.
+        view.addInteraction(AVCaptureEventInteraction { event in
+            if event.phase == .began { onShutter() }
+        })
+
+        // Buiten de render-pass om: koppelen triggert observatie-state.
+        let layer = view.videoPreviewLayer
+        Task { @MainActor in onAttach(layer) }
         return view
     }
 
@@ -247,6 +385,56 @@ struct CameraPreview: UIViewRepresentable {
     final class PreviewView: UIView {
         override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
         var videoPreviewLayer: AVCaptureVideoPreviewLayer { layer as! AVCaptureVideoPreviewLayer }
+
+        var onTap: ((CGPoint, CGPoint) -> Void)?
+        var onLongPress: ((CGPoint, CGPoint) -> Void)?
+
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+            addGestureRecognizer(UITapGestureRecognizer(
+                target: self, action: #selector(handleTap(_:))))
+            addGestureRecognizer(UILongPressGestureRecognizer(
+                target: self, action: #selector(handleLongPress(_:))))
+        }
+
+        required init?(coder: NSCoder) { fatalError("niet gebruikt") }
+
+        @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
+            let point = gesture.location(in: self)
+            onTap?(videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: point), point)
+        }
+
+        @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+            guard gesture.state == .began else { return }
+            let point = gesture.location(in: self)
+            onLongPress?(videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: point), point)
+        }
+    }
+}
+
+/// Regel-van-derden-raster over het (aspect-fit) videobeeld.
+private struct GridOverlay: View {
+    var body: some View {
+        GeometryReader { geo in
+            let size = geo.size
+            // Foto-preset is 4:3; portret toont 3:4.
+            let aspect: CGFloat = size.width < size.height ? 3.0 / 4.0 : 4.0 / 3.0
+            let width = min(size.width, size.height * aspect)
+            let height = width / aspect
+            let origin = CGPoint(x: (size.width - width) / 2,
+                                 y: (size.height - height) / 2)
+            Path { path in
+                for i in 1...2 {
+                    let x = origin.x + width * CGFloat(i) / 3
+                    path.move(to: CGPoint(x: x, y: origin.y))
+                    path.addLine(to: CGPoint(x: x, y: origin.y + height))
+                    let y = origin.y + height * CGFloat(i) / 3
+                    path.move(to: CGPoint(x: origin.x, y: y))
+                    path.addLine(to: CGPoint(x: origin.x + width, y: y))
+                }
+            }
+            .stroke(.white.opacity(0.4), lineWidth: 0.5)
+        }
     }
 }
 
@@ -260,12 +448,54 @@ struct CameraView: View {
     @State private var model = CameraModel()
     @State private var flash = false
     @State private var isZooming = false
+    @State private var focusPoint: CGPoint?
+    @State private var showingLastCapture = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            CameraPreview(session: model.session).ignoresSafeArea()
+            CameraPreview(
+                session: model.session,
+                onAttach: { model.attach(previewLayer: $0) },
+                onTap: { devicePoint, viewPoint in
+                    model.focus(at: devicePoint)
+                    showFocusSquare(at: viewPoint)
+                },
+                onLongPress: { devicePoint, viewPoint in
+                    model.lockFocus(at: devicePoint)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    showFocusSquare(at: viewPoint)
+                },
+                onShutter: { shoot() }
+            )
+            .overlay {
+                if model.showGrid && !model.accessDenied {
+                    GridOverlay().allowsHitTesting(false)
+                }
+            }
+            // In dezelfde overlay als de preview: dan kloppen de coördinaten.
+            .overlay {
+                if let focusPoint {
+                    RoundedRectangle(cornerRadius: 2)
+                        .stroke(.yellow, lineWidth: 1.5)
+                        .frame(width: 80, height: 80)
+                        .position(focusPoint)
+                        .allowsHitTesting(false)
+                }
+            }
+            .overlay(alignment: .top) {
+                if model.focusLocked {
+                    Text("AE/AF Lock")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(.yellow, in: Capsule())
+                        .padding(.top, 64)
+                }
+            }
+            .ignoresSafeArea()
 
             if model.accessDenied {
                 ContentUnavailableView {
@@ -292,6 +522,23 @@ struct CameraView: View {
         .task { model.start(store: store, album: album) }
         .onDisappear { model.stop() }
         .statusBarHidden()
+        // Laatste foto groot, voor de scherpte-check; tik of veeg omlaag sluit.
+        .fullScreenCover(isPresented: $showingLastCapture) {
+            ZStack {
+                Color.black.ignoresSafeArea()
+                if let image = model.lastCapture {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                }
+            }
+            .onTapGesture { showingLastCapture = false }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 30).onEnded { value in
+                    if value.translation.height > 80 { showingLastCapture = false }
+                }
+            )
+        }
         // Pinch = zoomen (dual-wide lens: van 0.5× ultrawide tot 16× digitaal).
         .simultaneousGesture(
             MagnificationGesture()
@@ -325,31 +572,58 @@ struct CameraView: View {
         }
     }
 
+    /// Geel kadertje op het tikpunt, verdwijnt vanzelf weer.
+    private func showFocusSquare(at point: CGPoint) {
+        withAnimation(.snappy(duration: 0.15)) { focusPoint = point }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            withAnimation(.easeOut(duration: 0.3)) { focusPoint = nil }
+        }
+    }
+
     private var topBar: some View {
-        HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "chevron.down")
-                    .font(.title2.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .padding(12)
+        ZStack {
+            HStack(spacing: 8) {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.down")
+                        .font(.title2.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(12)
+                }
+                .glassEffect(.regular.interactive(), in: .circle)
+
+                Spacer()
+
+                topBarButton("grid", active: model.showGrid) { model.toggleGrid() }
+                topBarButton("flashlight.on.fill", active: model.torchOn) { model.toggleTorch() }
+                Button { model.cycleFlash() } label: {
+                    Image(systemName: flashIcon)
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(model.flashMode == .on ? .yellow : .white)
+                        .frame(width: 44, height: 44)
+                }
+                .glassEffect(.regular.interactive(), in: .circle)
             }
-            .glassEffect(.regular.interactive(), in: .circle)
-            Spacer()
+
             Text(title)
                 .font(.headline)
                 .foregroundStyle(.white)
+                .lineLimit(1)
                 .padding(.horizontal, 14).padding(.vertical, 7)
                 .glassEffect(.regular, in: .capsule)
-            Spacer()
-            Button { model.cycleFlash() } label: {
-                Image(systemName: flashIcon)
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(model.flashMode == .on ? .yellow : .white)
-                    .frame(width: 44, height: 44)
-            }
-            .glassEffect(.regular.interactive(), in: .circle)
+                .frame(maxWidth: 170)
         }
         .padding()
+    }
+
+    private func topBarButton(_ systemName: String, active: Bool,
+                              action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(active ? .yellow : .white)
+                .frame(width: 44, height: 44)
+        }
+        .glassEffect(.regular.interactive(), in: .circle)
     }
 
     /// auto → A-bliksem, geforceerd aan → gele bliksem, uit → doorgestreept.
@@ -409,11 +683,14 @@ struct CameraView: View {
         HStack {
             Group {
                 if let thumb = model.lastThumbnail {
-                    Image(uiImage: thumb)
-                        .resizable().scaledToFill()
-                        .frame(width: 52, height: 52)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(.white.opacity(0.6)))
+                    // Tik = laatste foto groot bekijken (scherpte-check).
+                    Button { showingLastCapture = true } label: {
+                        Image(uiImage: thumb)
+                            .resizable().scaledToFill()
+                            .frame(width: 52, height: 52)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(.white.opacity(0.6)))
+                    }
                 } else {
                     Color.clear.frame(width: 52, height: 52)
                 }

@@ -91,6 +91,16 @@
         }
       }
     },
+    "AE/AF Lock": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AE/AF-vergrendeling"
+          }
+        }
+      }
+    },
     "Access to your photos": {
       "localizations": {
         "nl": {
