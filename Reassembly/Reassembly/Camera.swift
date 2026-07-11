@@ -593,15 +593,18 @@ struct CameraView: View {
 
                 Spacer()
 
-                topBarButton("grid", active: model.showGrid) { model.toggleGrid() }
-                topBarButton("flashlight.on.fill", active: model.torchOn) { model.toggleTorch() }
-                Button { model.cycleFlash() } label: {
-                    Image(systemName: flashIcon)
-                        .font(.title3.weight(.semibold))
-                        .foregroundStyle(model.flashMode == .on ? .yellow : .white)
-                        .frame(width: 44, height: 44)
+                // Acties samen in één pill, zoals Photos ze groepeert.
+                HStack(spacing: 0) {
+                    topBarButton("grid", active: model.showGrid) { model.toggleGrid() }
+                    topBarButton("flashlight.on.fill", active: model.torchOn) { model.toggleTorch() }
+                    Button { model.cycleFlash() } label: {
+                        Image(systemName: flashIcon)
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(model.flashMode == .on ? .yellow : .white)
+                            .frame(width: 44, height: 44)
+                    }
                 }
-                .glassEffect(.regular.interactive(), in: .circle)
+                .glassEffect(.regular, in: .capsule)
             }
 
             Text(title)
@@ -615,6 +618,7 @@ struct CameraView: View {
         .padding()
     }
 
+    /// Knop binnen de acties-pill; de pill zelf levert het glas.
     private func topBarButton(_ systemName: String, active: Bool,
                               action: @escaping () -> Void) -> some View {
         Button(action: action) {
@@ -623,7 +627,6 @@ struct CameraView: View {
                 .foregroundStyle(active ? .yellow : .white)
                 .frame(width: 44, height: 44)
         }
-        .glassEffect(.regular.interactive(), in: .circle)
     }
 
     /// auto → A-bliksem, geforceerd aan → gele bliksem, uit → doorgestreept.
