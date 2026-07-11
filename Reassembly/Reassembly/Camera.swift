@@ -601,24 +601,26 @@ struct CameraView: View {
 
                 Spacer()
 
-                // Eén menu met alle opties; het icoon kleurt geel zodra er
-                // iets actiefs in zit (zaklamp aan / flits geforceerd).
-                Menu {
-                    Picker("Flash", selection: flashBinding) {
-                        Label("Auto", systemImage: "bolt.badge.automatic").tag(AVCaptureDevice.FlashMode.auto)
-                        Label("On", systemImage: "bolt.fill").tag(AVCaptureDevice.FlashMode.on)
-                        Label("Off", systemImage: "bolt.slash").tag(AVCaptureDevice.FlashMode.off)
+                // Flits altijd zichtbaar (één tik, status af te lezen); de
+                // rest achter het ⋯-menu. Samen in één pill.
+                HStack(spacing: 0) {
+                    Button { cycleFlash() } label: {
+                        Image(systemName: flashIcon)
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(model.flashMode == .on ? .yellow : .white)
+                            .frame(width: 44, height: 44)
                     }
-                    .pickerStyle(.menu)
-                    Toggle("Torch", systemImage: "flashlight.on.fill", isOn: torchBinding)
-                    Toggle("Grid", systemImage: "grid", isOn: gridBinding)
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.title3.weight(.semibold))
-                        .foregroundStyle(model.torchOn || model.flashMode == .on ? .yellow : .white)
-                        .frame(width: 44, height: 44)
+                    Menu {
+                        Toggle("Torch", systemImage: "flashlight.on.fill", isOn: torchBinding)
+                        Toggle("Grid", systemImage: "grid", isOn: gridBinding)
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(model.torchOn ? .yellow : .white)
+                            .frame(width: 44, height: 44)
+                    }
                 }
-                .glassEffect(.regular.interactive(), in: .circle)
+                .glassEffect(.regular, in: .capsule)
             }
 
             Text(title)
@@ -632,8 +634,22 @@ struct CameraView: View {
         .padding()
     }
 
-    private var flashBinding: Binding<AVCaptureDevice.FlashMode> {
-        Binding(get: { model.flashMode }, set: { model.setFlash($0) })
+    private func cycleFlash() {
+        let next: AVCaptureDevice.FlashMode = switch model.flashMode {
+        case .auto: .on
+        case .on: .off
+        default: .auto
+        }
+        model.setFlash(next)
+    }
+
+    /// auto → A-bliksem, geforceerd aan → gele bliksem, uit → doorgestreept.
+    private var flashIcon: String {
+        switch model.flashMode {
+        case .on: "bolt.fill"
+        case .off: "bolt.slash.fill"
+        default: "bolt.badge.a.fill"
+        }
     }
 
     private var torchBinding: Binding<Bool> {
