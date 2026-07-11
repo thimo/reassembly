@@ -385,8 +385,11 @@ struct CameraView: View {
             // Zoals de Camera-app: inactief = kaal wit cijfer, actief = grotere
             // donkere cirkel met geel cijfer + "×".
             Text(zoomText(isActive ? model.displayZoom : preset.display, active: isActive))
-                .font(.system(size: isActive ? 14 : 12, weight: .semibold, design: .rounded))
-                .monospacedDigit()
+                // Mono-font en een maatje kleiner, zoals Apple; schaalt zo
+                // nodig verder terug zodat "6,4×" in de cirkel blijft passen.
+                .font(.system(size: isActive ? 13 : 11, weight: .semibold, design: .monospaced))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
                 .foregroundStyle(isActive ? Color.yellow : .white)
                 .frame(width: isActive ? 38 : 28, height: isActive ? 38 : 28)
                 .background(.black.opacity(isActive ? 0.5 : 0.35), in: Circle())
