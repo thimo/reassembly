@@ -203,6 +203,9 @@ private struct ProjectsLevel: View {
                 NavigationLink(value: project) {
                     ProjectRow(project: project)
                 }
+                // Krappere rij-marges: de stapel houdt z'n maat, de witruimte
+                // eromheen niet.
+                .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12))
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     // Geen role: .destructive — dat animeert de rij meteen weg,
                     // terwijl onze delete async is (+ annuleerbare systeemvraag).
@@ -353,10 +356,10 @@ private struct ProjectRow: View {
                 Image(systemName: "folder")
                     .font(.title2)
                     .foregroundStyle(.tint)
-                    .frame(width: 44, height: 44)
+                    .frame(width: 52, height: 52)
             } else {
                 AlbumStack(assets: project.coverAssets)
-                    .frame(width: 44, height: 44)
+                    .frame(width: 52, height: 52)
             }
 
             VStack(alignment: .leading, spacing: 2) {
@@ -369,7 +372,6 @@ private struct ProjectRow: View {
                 }
             }
         }
-        .padding(.vertical, 2)
     }
 
     private var subtitle: String? {
@@ -410,7 +412,7 @@ private struct AlbumStack: View {
                 ForEach(Array(assets.enumerated().reversed()),
                         id: \.element.localIdentifier) { index, asset in
                     RowThumb(asset: asset)
-                        .frame(width: 36, height: 36)
+                        .frame(width: 44, height: 44)
                         .rotationEffect(.degrees(rotation(for: index)))
                         .offset(offset(for: index))
                 }
@@ -428,9 +430,9 @@ private struct AlbumStack: View {
 
     private func offset(for index: Int) -> CGSize {
         switch index {
-        case 1: CGSize(width: -2, height: -3)
-        case 2: CGSize(width: 2, height: -5)
-        default: CGSize(width: 0, height: 3)
+        case 1: CGSize(width: -2, height: -4)
+        case 2: CGSize(width: 3, height: -6)
+        default: CGSize(width: 0, height: 4)
         }
     }
 }
