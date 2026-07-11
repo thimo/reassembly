@@ -32,6 +32,31 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
     /// Zoomniveau zoals de gebruiker het kent (0.5×, 1×, 2.3×).
     private(set) var displayZoom: Double = 1
 
+    /// Zoomknoppen zoals de Camera-app, afgeleid van de echte lenzen: 0.5× als
+    /// er een ultrawide is, 1×, het sensor-crop-punt (2×) en tele-lenzen.
+    struct ZoomPreset: Identifiable, Equatable {
+        let display: Double
+        let factor: CGFloat
+        var id: Double { display }
+    }
+
+    private(set) var zoomPresets: [ZoomPreset] = []
+
+    /// De preset waar het huidige zoomniveau bij hoort (grootste ≤ huidige).
+    var activeZoomPreset: ZoomPreset? {
+        zoomPresets.last { $0.display <= displayZoom + 0.01 } ?? zoomPresets.first
+    }
+
+    func select(_ preset: ZoomPreset) {
+        guard let device else { return }
+        displayZoom = Double(preset.factor / oneXFactor)
+        sessionQueue.async {
+            guard (try? device.lockForConfiguration()) != nil else { return }
+            device.ramp(toVideoZoomFactor: preset.factor, withRate: 8)
+            device.unlockForConfiguration()
+        }
+    }
+
     private(set) var capturedCount = 0
     private(set) var lastThumbnail: UIImage?
     private(set) var accessDenied = false
@@ -114,9 +139,31 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
                 device.videoZoomFactor = oneX
                 device.unlockForConfiguration()
             }
+            // Presets uit de hardware: ultrawide, 1×, sensor-crop en tele.
+            var presets: [ZoomPreset] = []
+            let minZoom = device.minAvailableVideoZoomFactor
+            if minZoom < oneX {
+                presets.append(ZoomPreset(
+                    display: (Double(minZoom / oneX) * 10).rounded() / 10,
+                    factor: minZoom))
+            }
+            presets.append(ZoomPreset(display: 1, factor: oneX))
+            let teles = device.virtualDeviceSwitchOverVideoZoomFactors.dropFirst()
+                .map { CGFloat(truncating: $0) }
+            let sensorCrops = device.activeFormat.secondaryNativeResolutionZoomFactors
+            for factor in (teles + sensorCrops) where factor > oneX {
+                presets.append(ZoomPreset(
+                    display: (Double(factor / oneX) * 10).rounded() / 10,
+                    factor: factor))
+            }
+            presets.sort { $0.display < $1.display }
+            var seen = Set<Double>()
+            let uniquePresets = presets.filter { seen.insert($0.display).inserted }
+
             Task { @MainActor in
                 self.device = device
                 self.oneXFactor = oneX
+                self.zoomPresets = uniquePresets
             }
         }
         if session.canAddOutput(photoOutput) {
@@ -313,22 +360,35 @@ struct CameraView: View {
     }
 
     private var bottomBar: some View {
-        VStack(spacing: 14) {
-            // Zoomniveau zoals de Camera-app: klein chipje boven de sluiter.
-            Text(zoomLabel)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
+        VStack(spacing: 18) {
+            // Zoomknoppen zoals de Camera-app: preset per lens, de actieve is
+            // geel en toont tijdens pinchen de werkelijke waarde.
+            if !model.zoomPresets.isEmpty {
+                HStack(spacing: 2) {
+                    ForEach(model.zoomPresets) { preset in
+                        zoomButton(preset)
+                    }
+                }
+                .padding(3)
                 .glassEffect(.regular, in: .capsule)
+            }
 
             bottomControls
         }
     }
 
-    private var zoomLabel: String {
-        model.displayZoom
-            .formatted(.number.precision(.fractionLength(0...1))) + "×"
+    private func zoomButton(_ preset: CameraModel.ZoomPreset) -> some View {
+        let isActive = model.activeZoomPreset == preset
+        return Button { model.select(preset) } label: {
+            Text(isActive
+                 ? model.displayZoom.formatted(.number.precision(.fractionLength(0...1))) + "×"
+                 : preset.display.formatted(.number.precision(.fractionLength(0...1))))
+                .font(.caption.weight(.bold))
+                .foregroundStyle(isActive ? .yellow : .white)
+                .frame(width: isActive ? 40 : 30, height: isActive ? 40 : 30)
+                .background(.black.opacity(isActive ? 0.45 : 0.25), in: Circle())
+        }
+        .animation(.snappy(duration: 0.15), value: isActive)
     }
 
     private var bottomControls: some View {
