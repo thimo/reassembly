@@ -123,9 +123,11 @@ final class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
     private func configureSession() {
         session.beginConfiguration()
         session.sessionPreset = .photo
-        // Dual-wide (virtueel: ultrawide + wide) geeft het hele zoombereik
-        // vanaf 0.5×; los wide-toestel als fallback.
-        let device = AVCaptureDevice.default(.builtInDualWideCamera, for: .video, position: .back)
+        // Triple (ultrawide + wide + tele) waar beschikbaar — alleen dan doet
+        // de telelens mee en verschijnt z'n zoomknop (bv. 3× of 4×). Anders
+        // dual-wide, anders kale wide.
+        let device = AVCaptureDevice.default(.builtInTripleCamera, for: .video, position: .back)
+            ?? AVCaptureDevice.default(.builtInDualWideCamera, for: .video, position: .back)
             ?? AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
             ?? AVCaptureDevice.default(for: .video)
         if let device,
