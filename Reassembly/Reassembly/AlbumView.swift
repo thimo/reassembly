@@ -71,7 +71,7 @@ struct AlbumView: View {
                 }
             }
         }
-        .task(id: store.changeToken) { reload() }
+        .task(id: store.changeToken) { await reload() }
         .fullScreenCover(item: $viewerIndex) { state in
             PhotoViewer(store: store, assets: assets, index: state.index)
         }
@@ -338,13 +338,18 @@ struct AlbumView: View {
         }
     }
 
-    private func reload() {
-        let options = PHFetchOptions()
-        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-        let result = PHAsset.fetchAssets(in: album, options: options)
-        var found: [PHAsset] = []
-        result.enumerateObjects { asset, _, _ in found.append(asset) }
-        assets = found
+    /// Assets ophalen buiten de main thread: grote albums mogen de navigatie-
+    /// overgang niet ophouden.
+    private func reload() async {
+        let album = album
+        assets = await Task.detached(priority: .userInitiated) {
+            let options = PHFetchOptions()
+            options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+            var found: [PHAsset] = []
+            PHAsset.fetchAssets(in: album, options: options)
+                .enumerateObjects { asset, _, _ in found.append(asset) }
+            return found
+        }.value
     }
 }
 

@@ -94,18 +94,27 @@ private struct ProjectsLevel: View {
     @State private var errorMessage: String?
     @State private var renaming: Project?
     @State private var renameText = ""
+    /// Gecachte kinderen: de PhotoKit-scan (tellingen, datums, covers) is te
+    /// zwaar om synchroon in elke render te draaien — dat gaf voelbare
+    /// navigatievertraging. De task hieronder ververst bij elke library-
+    /// wijziging.
+    @State private var children: [Project] = []
+    @State private var loaded = false
 
     var body: some View {
         Group {
-            if children.isEmpty {
+            if !loaded {
+                Color.clear
+            } else if children.isEmpty {
                 emptyState
             } else {
                 list
             }
         }
-        // changeToken echt gebruiken (geen dead-code-eliminatie): forceert een
-        // verse render — en dus verse tellingen — bij elke library-wijziging.
-        .id(store.changeToken)
+        .task(id: store.changeToken) {
+            children = await store.loadChildren(of: parent)
+            loaded = true
+        }
         .navigationTitle(currentTitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -323,15 +332,6 @@ private struct ProjectsLevel: View {
         }
     }
 
-    /// De lijst is een pure afgeleide van de Photos-hiërarchie. Door changeToken
-    /// te lezen her-evalueert de view bij elke wijziging (nieuwe foto, hernoem,
-    /// nieuw album); bij terugkeren uit een album wordt sowieso opnieuw
-    /// gerenderd — dus altijd verse tellingen en namen.
-    private var children: [Project] {
-        _ = store.changeToken
-        return store.children(of: parent)
-    }
-
     private var errorBinding: Binding<Bool> {
         Binding(
             get: { errorMessage != nil },
@@ -455,7 +455,8 @@ private struct RowThumb: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
             // Randje in de achtergrondkleur zodat de lagen zich aftekenen.
             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(.background, lineWidth: 1.5))
-            // Het hele niveau krijgt .id(changeToken), dus deze view wordt bij
+            // Elke library-wijziging levert verse Project-waarden, dus deze
+            // view wordt bij
             // elke library-wijziging opnieuw opgebouwd — verse lading volstaat.
             .task { load() }
     }

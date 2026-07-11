@@ -60,6 +60,17 @@ extension Project {
 }
 
 extension Project: Hashable {
-    static func == (lhs: Project, rhs: Project) -> Bool { lhs.id == rhs.id }
+    /// Vergelijkt op inhoud, niet alleen id: SwiftUI beslist hiermee of een
+    /// rij opnieuw getekend moet worden. Alleen-id gaf stale titels en
+    /// tellingen na hernoemen of foto-wijzigingen.
+    static func == (lhs: Project, rhs: Project) -> Bool {
+        lhs.id == rhs.id
+            && lhs.title == rhs.title
+            && lhs.assetCount == rhs.assetCount
+            && lhs.folderCount == rhs.folderCount
+            && lhs.albumCount == rhs.albumCount
+            && lhs.lastActivity == rhs.lastActivity
+    }
+
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }

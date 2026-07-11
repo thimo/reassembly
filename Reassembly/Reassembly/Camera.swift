@@ -460,6 +460,7 @@ struct CameraView: View {
     @State private var showingLastCapture = false
     @State private var statusMessage: String?
     @State private var statusToken = 0
+    @State private var optionsExpanded = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -616,33 +617,40 @@ struct CameraView: View {
 
                 Spacer()
 
-                // Flits altijd zichtbaar (één tik, status af te lezen); de
-                // rest achter het ⋯-menu. Elke knop z'n eigen glasvorm en de
-                // container smelt ze samen tot één pill — zo highlight het
-                // systeem bij een open menu alleen het menu-deel, niet de
-                // hele pill.
-                GlassEffectContainer(spacing: 2) {
-                    HStack(spacing: 2) {
-                        Button { cycleFlash() } label: {
-                            Image(systemName: flashIcon)
-                                .font(.title3.weight(.semibold))
-                                .foregroundStyle(model.flashMode == .on ? .yellow : .white)
-                                .frame(width: 44, height: 44)
-                        }
-                        .glassEffect(.regular.interactive(), in: .circle)
-
-                        Menu {
-                            Toggle("Torch", systemImage: "flashlight.on.fill", isOn: torchBinding)
-                            Toggle("Grid", systemImage: "grid", isOn: gridBinding)
-                        } label: {
-                            Image(systemName: "ellipsis")
+                // Eén pill: flits altijd zichtbaar, ⋯ klapt zaklamp en raster
+                // erbij open (zoals de Camera-app z'n opties uitklapt — een
+                // Menu gaf een grijze bron-highlight die bleef hangen).
+                HStack(spacing: 0) {
+                    Button { cycleFlash() } label: {
+                        Image(systemName: flashIcon)
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(model.flashMode == .on ? .yellow : .white)
+                            .frame(width: 44, height: 44)
+                    }
+                    if optionsExpanded {
+                        Button { model.toggleTorch() } label: {
+                            Image(systemName: "flashlight.on.fill")
                                 .font(.title3.weight(.semibold))
                                 .foregroundStyle(model.torchOn ? .yellow : .white)
                                 .frame(width: 44, height: 44)
                         }
-                        .glassEffect(.regular.interactive(), in: .circle)
+                        Button { model.toggleGrid() } label: {
+                            Image(systemName: "grid")
+                                .font(.title3.weight(.semibold))
+                                .foregroundStyle(model.showGrid ? .yellow : .white)
+                                .frame(width: 44, height: 44)
+                        }
+                    }
+                    Button {
+                        withAnimation(.snappy(duration: 0.2)) { optionsExpanded.toggle() }
+                    } label: {
+                        Image(systemName: optionsExpanded ? "chevron.right" : "ellipsis")
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(model.torchOn && !optionsExpanded ? .yellow : .white)
+                            .frame(width: 44, height: 44)
                     }
                 }
+                .glassEffect(.regular, in: .capsule)
             }
 
             Text(title)
@@ -693,13 +701,6 @@ struct CameraView: View {
         }
     }
 
-    private var torchBinding: Binding<Bool> {
-        Binding(get: { model.torchOn }, set: { _ in model.toggleTorch() })
-    }
-
-    private var gridBinding: Binding<Bool> {
-        Binding(get: { model.showGrid }, set: { _ in model.toggleGrid() })
-    }
 
     private var bottomBar: some View {
         // Ruime afstand tussen zoomrondjes en sluiter: zo staan de rondjes

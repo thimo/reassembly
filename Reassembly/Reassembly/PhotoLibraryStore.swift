@@ -56,6 +56,17 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         return childProjects(of: target)
     }
 
+    /// Zelfde als `children(of:)`, maar de PhotoKit-fetches draaien buiten de
+    /// main thread — tellingen en datums per project zijn te zwaar om een
+    /// navigatie-overgang op te laten wachten.
+    func loadChildren(of parent: PHCollectionList?) async -> [Project] {
+        guard hasFullAccess else { return [] }
+        return await Task.detached(priority: .userInitiated) {
+            guard let target = parent ?? self.findRootFolder() else { return [] }
+            return self.childProjects(of: target)
+        }.value
+    }
+
     /// Zoekt een album of folder op localIdentifier — voor navigatie-herstel.
     /// Geeft nil als het item niet (meer) bestaat.
     func project(withLocalIdentifier id: String) -> Project? {
@@ -84,7 +95,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         )
     }
 
-    private func collectAlbums(in folder: PHCollectionList) -> [Project] {
+    nonisolated private func collectAlbums(in folder: PHCollectionList) -> [Project] {
         var result: [Project] = []
         PHCollection.fetchCollections(in: folder, options: nil)
             .enumerateObjects { collection, _, _ in
@@ -120,7 +131,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         return chain
     }
 
-    private func findRootFolder() -> PHCollectionList? {
+    nonisolated private func findRootFolder() -> PHCollectionList? {
         let options = PHFetchOptions()
         options.predicate = NSPredicate(format: "localizedTitle == %@", Self.rootFolderName)
         return PHCollectionList
@@ -128,7 +139,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
             .firstObject
     }
 
-    private func childProjects(of folder: PHCollectionList) -> [Project] {
+    nonisolated private func childProjects(of folder: PHCollectionList) -> [Project] {
         var result: [Project] = []
         PHCollection.fetchCollections(in: folder, options: nil)
             .enumerateObjects { collection, _, _ in
@@ -145,7 +156,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         }
     }
 
-    private func makeProject(album: PHAssetCollection) -> Project {
+    nonisolated private func makeProject(album: PHAssetCollection) -> Project {
         let count = PHAsset.fetchAssets(in: album, options: nil).count
         // Nieuwste drie in één fetch: bovenste = cover, en z'n datum is meteen
         // de "laatste activiteit".
@@ -166,7 +177,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         )
     }
 
-    private func makeProject(folder: PHCollectionList) -> Project {
+    nonisolated private func makeProject(folder: PHCollectionList) -> Project {
         var folders = 0
         var albums = 0
         PHCollection.fetchCollections(in: folder, options: nil)
@@ -188,7 +199,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
     }
 
     /// Datum van de nieuwste foto in een album.
-    private func newestAssetDate(in album: PHAssetCollection) -> Date? {
+    nonisolated private func newestAssetDate(in album: PHAssetCollection) -> Date? {
         let opts = PHFetchOptions()
         opts.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         opts.fetchLimit = 1
@@ -196,7 +207,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
     }
 
     /// Datum van de oudste foto in een album (≈ aanmaak).
-    private func oldestAssetDate(in album: PHAssetCollection) -> Date? {
+    nonisolated private func oldestAssetDate(in album: PHAssetCollection) -> Date? {
         let opts = PHFetchOptions()
         opts.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
         opts.fetchLimit = 1
@@ -204,7 +215,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
     }
 
     /// Nieuwste asset ergens onder een folder — recursief door subfolders heen.
-    private func newestAssetDate(inFolder folder: PHCollectionList) -> Date? {
+    nonisolated private func newestAssetDate(inFolder folder: PHCollectionList) -> Date? {
         var newest: Date?
         PHCollection.fetchCollections(in: folder, options: nil)
             .enumerateObjects { collection, _, _ in

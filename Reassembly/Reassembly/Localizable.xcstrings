@@ -261,16 +261,6 @@
         }
       }
     },
-    "Grid": {
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Raster"
-          }
-        }
-      }
-    },
     "Name": {
       "localizations": {
         "nl": {
@@ -568,16 +558,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vandaag"
-          }
-        }
-      }
-    },
-    "Torch": {
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zaklamp"
           }
         }
       }
