@@ -364,14 +364,13 @@ struct CameraView: View {
             // Zoomknoppen zoals de Camera-app: preset per lens, de actieve is
             // geel en toont tijdens pinchen de werkelijke waarde.
             if !model.zoomPresets.isEmpty {
-                HStack(spacing: 0) {
+                // Losse donkere rondjes per knop, zoals de Camera-app —
+                // géén omhullende capsule.
+                HStack(spacing: 10) {
                     ForEach(model.zoomPresets) { preset in
                         zoomButton(preset)
                     }
                 }
-                .padding(4)
-                // Donkere capsule zoals de Camera-app, geen licht glas.
-                .background(.black.opacity(0.35), in: Capsule())
             }
 
             bottomControls
@@ -388,7 +387,7 @@ struct CameraView: View {
                 .monospacedDigit()
                 .foregroundStyle(isActive ? Color.yellow : .white)
                 .frame(width: isActive ? 38 : 28, height: isActive ? 38 : 28)
-                .background(.black.opacity(isActive ? 0.5 : 0), in: Circle())
+                .background(.black.opacity(isActive ? 0.5 : 0.35), in: Circle())
         }
         .animation(.snappy(duration: 0.15), value: isActive)
     }
