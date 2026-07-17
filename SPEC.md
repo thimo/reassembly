@@ -106,9 +106,11 @@ simpel door radicaal platform-native te blijven. Concreet voor Reassembly:
 
 ## App Store
 
-- Naam "Reassembly" vrij in US store (iTunes Search API, gecheckt 2026-07-03);
+- Naam: **"Re-assembly"** (besloten 2026-07-17) — streepje maakt de
+  Haynes-grap expliciet, matcht de display name op het homescreen, en
+  onderscheidt van de PC-game *Reassembly* (Steam; andere categorie, laag
+  risico). Vrij in US store (iTunes Search API, gecheckt 2026-07-17);
   definitief pas bij reservering in App Store Connect
-- PC-game *Reassembly* (Steam) bestaat; andere categorie, laag risico
 
 ## Definitief: opslag in Photos
 
@@ -125,7 +127,6 @@ bijbehorende randzaken (privacy policy, listing, review) de moeite waard vindt.
 
 ## Open punten
 
-- Spelling op homescreen: "Reassembly" of "Re-Assembly"
-- Naam reserveren in App Store Connect
+- Naam "Re-assembly" reserveren in App Store Connect
 - Widget Extension-target (ControlWidget) en LockedCameraCapture-extension
   aanmaken in Xcode — daarna kan de code erin
