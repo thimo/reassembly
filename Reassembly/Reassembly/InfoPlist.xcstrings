@@ -28,6 +28,12 @@
     "NSCameraUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Re-assembly uses the camera to take teardown photos in your active project."
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39,6 +45,12 @@
     "NSLocationWhenInUseUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Re-assembly adds location to your teardown photos, so you'll know later where you were working."
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -50,6 +62,12 @@
     "NSPhotoLibraryUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Re-assembly stores your teardown photos in your photo library and creates albums for them."
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
