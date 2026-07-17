@@ -110,15 +110,18 @@ simpel door radicaal platform-native te blijven. Concreet voor Reassembly:
   definitief pas bij reservering in App Store Connect
 - PC-game *Reassembly* (Steam) bestaat; andere categorie, laag risico
 
-## Definitief: opslag in Photos, app wordt geen product
+## Definitief: opslag in Photos
 
 Assets in de library verschijnen altijd in Recents — "alleen in albums" bestaat
 niet in PhotoKit (`isHidden` verbergt ook uit albums; geen route). Dat is
-acceptabel, want de app is en blijft voor eigen gebruik: Thimo wil de
-commerciële activiteit (marketing, support) die een product vereist niet —
-zelfde besluit als bij zijn andere macOS-projecten. Solo-commercieel sleutelen
-(klant-folders) kan gewoon binnen dit model; desnoods aparte Apple ID op een
-werkplaats-device. Eigen opslag + CloudKit-sync is daarmee definitief van tafel.
+acceptabel voor de doelgroep (eigen gebruik, hobbyisten die hun foto's toch al
+in Photos willen). Solo-commercieel sleutelen (klant-folders) kan gewoon binnen
+dit model; desnoods aparte Apple ID op een werkplaats-device. Eigen opslag +
+CloudKit-sync is daarmee definitief van tafel.
+
+Distributie: eerst TestFlight (intern, eigen devices). Een App Store-release
+is later niet uitgesloten (besluit herzien 2026-07-17); wel pas als Thimo de
+bijbehorende randzaken (privacy policy, listing, review) de moeite waard vindt.
 
 ## Open punten
 
