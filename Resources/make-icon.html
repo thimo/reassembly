@@ -19,7 +19,7 @@
 <a id="dl"></a>
 <script>
 const NS = "http://www.w3.org/2000/svg";
-const K = 0.34, SW = 2.5;
+const K = 0.34, SW = 2.2;
 function el(name, attrs){ const e=document.createElementNS(NS,name); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
 
 function puck(g, cx, cyTop, R, h, { solid=false, holeR=0 }={}) {
@@ -29,7 +29,14 @@ function puck(g, cx, cyTop, R, h, { solid=false, holeR=0 }={}) {
   if(solid){
     const body=`M ${cx-R} ${cyTop} L ${cx-R} ${cyTop+h} A ${R} ${ry} 0 0 0 ${cx+R} ${cyTop+h} L ${cx+R} ${cyTop} A ${R} ${ry} 0 0 1 ${cx-R} ${cyTop} Z`;
     g.appendChild(el("path",{d:body,fill:"#fff"}));
-    g.appendChild(el("ellipse",{cx,cy:cyTop,rx:R,ry,fill:"#fff"}));
+    if(holeR){
+      const hr=holeR*K;
+      const face=`M ${cx-R} ${cyTop} A ${R} ${ry} 0 0 0 ${cx+R} ${cyTop} A ${R} ${ry} 0 0 0 ${cx-R} ${cyTop} Z `+
+                 `M ${cx-holeR} ${cyTop} A ${holeR} ${hr} 0 0 0 ${cx+holeR} ${cyTop} A ${holeR} ${hr} 0 0 0 ${cx-holeR} ${cyTop} Z`;
+      g.appendChild(el("path",{d:face,fill:"#fff","fill-rule":"evenodd"}));
+    } else {
+      g.appendChild(el("ellipse",{cx,cy:cyTop,rx:R,ry,fill:"#fff"}));
+    }
   } else {
     g.appendChild(el("path",{d:rim,...st}));
     g.appendChild(el("ellipse",{cx,cy:cyTop,rx:R,ry,...st}));
@@ -42,7 +49,8 @@ function hexNut(g, cx, cyTop, R, h, holeR){
   const top="M "+hp.map(p=>p[0].toFixed(2)+" "+p[1].toFixed(2)).join(" L ")+" Z";
   g.appendChild(el("path",{d:top,...st}));
   const left=hp[3],right=hp[0],fb1=hp[2],fb2=hp[1];
-  const rim=`M ${left[0]} ${left[1]} L ${left[0]} ${left[1]+h} L ${fb1[0]} ${fb1[1]+h} L ${fb2[0]} ${fb2[1]+h} L ${right[0]} ${right[1]+h} L ${right[0]} ${right[1]}`;
+  const rim=`M ${left[0]} ${left[1]} L ${left[0]} ${left[1]+h} L ${fb1[0]} ${fb1[1]+h} L ${fb2[0]} ${fb2[1]+h} L ${right[0]} ${right[1]+h} L ${right[0]} ${right[1]} `+
+            `M ${fb1[0]} ${fb1[1]} L ${fb1[0]} ${fb1[1]+h} M ${fb2[0]} ${fb2[1]} L ${fb2[0]} ${fb2[1]+h}`;
   g.appendChild(el("path",{d:rim,...st}));
   g.appendChild(el("ellipse",{cx,cy:cyTop,rx:holeR,ry:holeR*K,...st}));
 }
@@ -50,7 +58,7 @@ function isoPlate(g, cx, cyTop, hw, h, holeR){
   const hh=hw*K;
   const st={fill:"none",stroke:"#fff","stroke-width":SW,"stroke-linejoin":"round","stroke-linecap":"round"};
   const top=`M ${cx} ${cyTop-hh} L ${cx+hw} ${cyTop} L ${cx} ${cyTop+hh} L ${cx-hw} ${cyTop} Z`;
-  const rim=`M ${cx-hw} ${cyTop} L ${cx-hw} ${cyTop+h} L ${cx} ${cyTop+hh+h} L ${cx+hw} ${cyTop+h} L ${cx+hw} ${cyTop}`;
+  const rim=`M ${cx-hw} ${cyTop} L ${cx-hw} ${cyTop+h} L ${cx} ${cyTop+hh+h} L ${cx+hw} ${cyTop+h} L ${cx+hw} ${cyTop} M ${cx} ${cyTop+hh} L ${cx} ${cyTop+hh+h}`;
   g.appendChild(el("path",{d:top,...st}));
   g.appendChild(el("path",{d:rim,...st}));
   g.appendChild(el("ellipse",{cx,cy:cyTop,rx:holeR,ry:holeR*K,...st}));
@@ -84,10 +92,10 @@ svg.appendChild(el("rect",{x:0,y:0,width:100,height:100,fill:"url(#hi)"}));
 const g = el("g",{filter:"url(#lift)"});
 axis(g);
 // F3 — kop · plaat · washer · moer
-puck(g,50,17,11,6,{solid:true});
-isoPlate(g,50,38,24,6,7);
-puck(g,50,60,15,2.5,{holeR:6});
-hexNut(g,50,77,12,4.5,5);
+puck(g,50,17,11,6,{solid:true,holeR:4.5});
+isoPlate(g,50,38.4,24,9,7);
+puck(g,50,64.2,15,1.6,{holeR:6});
+hexNut(g,50,78.9,12,7.4,5);
 svg.appendChild(g);
 
 const svgStr = new XMLSerializer().serializeToString(svg);
