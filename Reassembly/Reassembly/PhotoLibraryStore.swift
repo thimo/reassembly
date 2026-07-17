@@ -27,13 +27,24 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
     /// store alle niveaus tegelijk in geheugen houdt.
     private(set) var changeToken = 0
 
+    /// Observer pas registreren als de autorisatie-status bekend is:
+    /// registreren bij `.notDetermined` triggert de systeemdialoog al bij het
+    /// opstarten, vóór onze eigen permissie-gate.
+    private var isObserving = false
+
     override init() {
         super.init()
-        PHPhotoLibrary.shared().register(self)
+        if authorization != .notDetermined { startObserving() }
     }
 
     deinit {
         PHPhotoLibrary.shared().unregisterChangeObserver(self)
+    }
+
+    private func startObserving() {
+        guard !isObserving else { return }
+        isObserving = true
+        PHPhotoLibrary.shared().register(self)
     }
 
     // MARK: - Toegang
@@ -44,6 +55,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
 
     func requestAccess() async {
         authorization = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+        if authorization != .notDetermined { startObserving() }
     }
 
     // MARK: - Lezen
