@@ -402,6 +402,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Re-assembly";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Re-assembly uses the camera to take teardown photos in your active project.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Re-assembly adds location to your teardown photos, so you'll know later where you were working.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Re-assembly stores your teardown photos in your photo library and creates albums for them.";
@@ -439,6 +440,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Re-assembly";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Re-assembly uses the camera to take teardown photos in your active project.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Re-assembly adds location to your teardown photos, so you'll know later where you were working.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Re-assembly stores your teardown photos in your photo library and creates albums for them.";
