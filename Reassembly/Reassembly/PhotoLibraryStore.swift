@@ -367,11 +367,22 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
 
     // MARK: - Bewerken
 
-    /// Draait een foto 90° tegen de klok in (zoals Photos). Non-destructief via
-    /// Photos' eigen edit-pijplijn: het origineel blijft bewaard en "Herstel" in
-    /// de Photos-app blijft werken. Eerdere bewerkingen worden ingebakken (wij
+    enum RotationDirection {
+        case counterclockwise, clockwise
+
+        var orientation: CGImagePropertyOrientation {
+            self == .counterclockwise ? .left : .right
+        }
+        var adjustmentTag: String {
+            self == .counterclockwise ? "ccw90" : "cw90"
+        }
+    }
+
+    /// Draait een foto 90° (zoals Photos). Non-destructief via Photos' eigen
+    /// edit-pijplijn: het origineel blijft bewaard en "Herstel" in de
+    /// Photos-app blijft werken. Eerdere bewerkingen worden ingebakken (wij
     /// lezen andermans adjustment data niet).
-    func rotateCounterclockwise(_ asset: PHAsset) async throws {
+    func rotate(_ asset: PHAsset, direction: RotationDirection) async throws {
         let isLive = asset.mediaSubtypes.contains(.photoLive)
 
         // Foto's in gedeelde albums / de iCloud Gedeelde Bibliotheek mag een
@@ -393,7 +404,7 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         output.adjustmentData = PHAdjustmentData(
             formatIdentifier: "nl.defrog.reassembly.rotate",
             formatVersion: "1",
-            data: Data("ccw90".utf8))
+            data: Data(direction.adjustmentTag.utf8))
 
         // Een bewerkte Live Photo moet wéér een Live Photo zijn — alleen een
         // stilstaand beeld aanleveren keurt Photos af (3302 invalidResource).
@@ -401,10 +412,10 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
         // camera niet.
         var renderInfo = "live"
         if isLive {
-            do { try await renderRotatedLivePhoto(input: input, to: output) }
+            do { try await renderRotatedLivePhoto(input: input, to: output, direction: direction) }
             catch { throw RotationError(stage: String(localized: "rendering Live Photo"), underlying: error) }
         } else {
-            do { renderInfo = try renderRotatedStill(input: input, to: output) }
+            do { renderInfo = try renderRotatedStill(input: input, to: output, direction: direction) }
             catch { throw RotationError(stage: String(localized: "rendering photo"), underlying: error) }
         }
 
@@ -443,13 +454,14 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
     /// gedragen formaten zit volgen we het voorkeursformaat van de asset.
     /// Geeft een korte formaat/grootte-omschrijving terug voor foutmeldingen.
     private func renderRotatedStill(input: PHContentEditingInput,
-                                    to output: PHContentEditingOutput) throws -> String {
+                                    to output: PHContentEditingOutput,
+                                    direction: RotationDirection) throws -> String {
         guard let url = input.fullSizeImageURL,
               let original = CIImage(contentsOf: url) else {
             throw CocoaError(.fileReadCorruptFile)
         }
         let upright = original.oriented(forExifOrientation: input.fullSizeImageOrientation)
-        let rotated = upright.oriented(.left)
+        let rotated = upright.oriented(direction.orientation)
 
         let type: UTType = output.supportedRenderedContentTypes.contains(.jpeg)
             ? .jpeg
@@ -485,12 +497,13 @@ final class PhotoLibraryStore: NSObject, PHPhotoLibraryChangeObserver {
     /// Live Photo: still én gekoppelde video samen draaien via Photos' eigen
     /// render-pijplijn, zodat het resultaat een geldige Live Photo blijft.
     private func renderRotatedLivePhoto(input: PHContentEditingInput,
-                                        to output: PHContentEditingOutput) async throws {
+                                        to output: PHContentEditingOutput,
+                                        direction: RotationDirection) async throws {
         guard let context = PHLivePhotoEditingContext(livePhotoEditingInput: input) else {
             throw CocoaError(.fileReadCorruptFile)
         }
         context.frameProcessor = { frame, _ in
-            frame.image.oriented(.left)
+            frame.image.oriented(direction.orientation)
         }
         try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
             context.saveLivePhoto(to: output) { success, error in

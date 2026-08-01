@@ -421,12 +421,22 @@
         }
       }
     },
-    "Rotate 90°": {
+    "Rotate Left": {
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Draai 90°"
+            "value": "Draai linksom"
+          }
+        }
+      }
+    },
+    "Rotate Right": {
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draai rechtsom"
           }
         }
       }

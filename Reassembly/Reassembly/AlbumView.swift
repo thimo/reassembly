@@ -209,9 +209,14 @@ struct AlbumView: View {
     private func menu(for asset: PHAsset) -> some View {
         if asset.mediaType == .image {
             Button {
-                rotate(asset)
+                rotate(asset, .counterclockwise)
             } label: {
-                Label("Rotate 90°", systemImage: "rotate.left")
+                Label("Rotate Left", systemImage: "rotate.left")
+            }
+            Button {
+                rotate(asset, .clockwise)
+            } label: {
+                Label("Rotate Right", systemImage: "rotate.right")
             }
         }
         Button(role: .destructive) {
@@ -284,9 +289,9 @@ struct AlbumView: View {
         }
     }
 
-    private func rotate(_ asset: PHAsset) {
+    private func rotate(_ asset: PHAsset, _ direction: PhotoLibraryStore.RotationDirection) {
         Task {
-            do { try await store.rotateCounterclockwise(asset) }
+            do { try await store.rotate(asset, direction: direction) }
             catch { errorMessage = error.localizedDescription }
         }
     }
@@ -458,7 +463,8 @@ private struct PhotoViewer: View {
                 bubbleButton("xmark") { dismiss() }
                 Spacer()
                 if assets.indices.contains(index), assets[index].mediaType == .image {
-                    bubbleButton("rotate.left") { rotateCurrent() }
+                    bubbleButton("rotate.left") { rotateCurrent(.counterclockwise) }
+                    bubbleButton("rotate.right") { rotateCurrent(.clockwise) }
                 }
             }
             .padding()
@@ -523,12 +529,12 @@ private struct PhotoViewer: View {
         )
     }
 
-    private func rotateCurrent() {
+    private func rotateCurrent(_ direction: PhotoLibraryStore.RotationDirection) {
         guard assets.indices.contains(index) else { return }
         let asset = assets[index]
         Task {
             // Grid en viewer verversen zelf via changeToken.
-            do { try await store.rotateCounterclockwise(asset) }
+            do { try await store.rotate(asset, direction: direction) }
             catch { errorMessage = error.localizedDescription }
         }
     }

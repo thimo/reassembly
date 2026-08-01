@@ -62,7 +62,7 @@ struct ReassemblyTests {
         let height = asset.pixelHeight
         #expect(width > height, "Testfoto hoort liggend te zijn")
 
-        try await store.rotateCounterclockwise(asset)
+        try await store.rotate(asset, direction: .counterclockwise)
 
         let rotated = try #require(PHAsset
             .fetchAssets(withLocalIdentifiers: [assetID], options: nil).firstObject)
@@ -109,7 +109,9 @@ struct ReassemblyTests {
         let height = asset.pixelHeight
         #expect(width > height, "Testfoto hoort liggend te zijn")
 
-        try await store.rotateCounterclockwise(asset)
+        // Clockwise hier, counterclockwise in de Live Photo-test: samen dekken
+        // ze beide richtingen.
+        try await store.rotate(asset, direction: .clockwise)
 
         let rotated = try #require(PHAsset
             .fetchAssets(withLocalIdentifiers: [assetID], options: nil).firstObject)
