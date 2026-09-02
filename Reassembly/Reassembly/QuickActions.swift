@@ -113,6 +113,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         config.delegateClass = SceneDelegate.self
         return config
     }
+
+    /// Het camerascherm zet de interface vast in portret; zie OrientationLock.
+    func application(_ application: UIApplication,
+                     supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        OrientationLock.mask
+    }
 }
 
 final class SceneDelegate: NSObject, UIWindowSceneDelegate {

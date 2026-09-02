@@ -454,6 +454,39 @@ private struct GridOverlay: View {
     }
 }
 
+// MARK: - Oriëntatievergrendeling
+
+/// Op de iPhone zit het camerascherm vast in portret, zoals de Camera-app: de
+/// knoppen blijven op hun plek (sluiter onder je duim) en alleen de glyphs
+/// draaien mee met het toestel. AppDelegate leest `mask` uit.
+@MainActor
+enum OrientationLock {
+    private static let free: UIInterfaceOrientationMask =
+        UIDevice.current.userInterfaceIdiom == .phone ? .allButUpsideDown : .all
+
+    private(set) static var mask: UIInterfaceOrientationMask = free
+
+    static func lock(_ locked: Bool) {
+        mask = locked ? .portrait : free
+        // Bij ontgrendelen meteen naar de stand waarin het toestel nú ligt;
+        // anders blijft de interface in portret hangen tot je 'm beweegt.
+        // (Device- en interface-oriëntatie zijn elkaars spiegelbeeld.)
+        let target: UIInterfaceOrientationMask = switch UIDevice.current.orientation {
+        case .landscapeLeft where !locked: .landscapeRight
+        case .landscapeRight where !locked: .landscapeLeft
+        default: .portrait
+        }
+        for scene in UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }) {
+            scene.requestGeometryUpdate(.iOS(interfaceOrientations: target))
+            for window in scene.windows {
+                var controller = window.rootViewController
+                while let presented = controller?.presentedViewController { controller = presented }
+                controller?.setNeedsUpdateOfSupportedInterfaceOrientations()
+            }
+        }
+    }
+}
+
 // MARK: - Camerascherm
 
 struct CameraView: View {
@@ -468,7 +501,15 @@ struct CameraView: View {
     @State private var statusMessage: String?
     @State private var statusToken = 0
     @State private var optionsExpanded = false
+    /// Draaihoek (graden, met de klok mee) waarmee de glyphs rechtop blijven
+    /// terwijl de interface in portret vaststaat. Cumulatief, zodat de
+    /// animatie altijd de korte weg neemt (ook van -90° naar 180°).
+    @State private var controlDegrees: Double = 0
     @Environment(\.dismiss) private var dismiss
+
+    /// Alleen de iPhone zet vast; op de iPad draait de hele interface gewoon.
+    private var locksOrientation: Bool { UIDevice.current.userInterfaceIdiom == .phone }
+    private var controlAngle: Angle { .degrees(controlDegrees) }
 
     var body: some View {
         ZStack {
@@ -558,16 +599,40 @@ struct CameraView: View {
                 .allowsHitTesting(false)
         }
         .task { model.start(store: store, album: album) }
-        .onDisappear { model.stop() }
+        .onAppear {
+            guard locksOrientation else { return }
+            OrientationLock.lock(true)
+            UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+            updateControlAngle(animated: false)
+        }
+        .onDisappear {
+            model.stop()
+            guard locksOrientation else { return }
+            UIDevice.current.endGeneratingDeviceOrientationNotifications()
+            OrientationLock.lock(false)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            if locksOrientation { updateControlAngle(animated: true) }
+        }
         .statusBarHidden()
         // Laatste foto groot, voor de scherpte-check; tik of veeg omlaag sluit.
         .fullScreenCover(isPresented: $showingLastCapture) {
             ZStack {
                 Color.black.ignoresSafeArea()
                 if let image = model.lastCapture {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
+                    // Draait mee met de glyphs: een landscape-foto vult zo het
+                    // scherm als je het toestel gekanteld houdt.
+                    GeometryReader { geo in
+                        let sideways = abs(controlDegrees.truncatingRemainder(dividingBy: 180)) == 90
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: sideways ? geo.size.height : geo.size.width,
+                                   height: sideways ? geo.size.width : geo.size.height)
+                            .rotationEffect(controlAngle)
+                            .position(x: geo.size.width / 2, y: geo.size.height / 2)
+                    }
+                    .ignoresSafeArea()
                 }
             }
             .onTapGesture { showingLastCapture = false }
@@ -618,6 +683,27 @@ struct CameraView: View {
         }
     }
 
+    /// Glyphs rechtop draaien naar de huidige toestelstand. Plat (faceUp/Down)
+    /// of onbekend: de laatste hoek blijft staan, net als in de Camera-app.
+    private func updateControlAngle(animated: Bool) {
+        let target: Double? = switch UIDevice.current.orientation {
+        case .portrait: 0
+        case .landscapeLeft: 90      // toestel linksom gedraaid → glyph rechtsom
+        case .landscapeRight: -90
+        case .portraitUpsideDown: 180
+        default: nil
+        }
+        guard let target else { return }
+        var delta = (target - controlDegrees).truncatingRemainder(dividingBy: 360)
+        if delta > 180 { delta -= 360 } else if delta <= -180 { delta += 360 }
+        guard delta != 0 else { return }
+        if animated {
+            withAnimation(.easeInOut(duration: 0.3)) { controlDegrees += delta }
+        } else {
+            controlDegrees += delta
+        }
+    }
+
     private var topBar: some View {
         // Geen albumtitel: de Camera-app heeft er ook geen, en je komt altijd
         // vanuit het album hier — de uitklap-pill heeft de ruimte nodig.
@@ -626,6 +712,7 @@ struct CameraView: View {
                     Image(systemName: "chevron.down")
                         .font(.title2.weight(.semibold))
                         .foregroundStyle(.white)
+                        .rotationEffect(controlAngle)
                         .padding(12)
                 }
                 .glassEffect(.regular.interactive(), in: .circle)
@@ -640,6 +727,7 @@ struct CameraView: View {
                         Image(systemName: flashIcon)
                             .font(.title3.weight(.semibold))
                             .foregroundStyle(model.flashMode == .on ? .yellow : .white)
+                            .rotationEffect(controlAngle)
                             .frame(width: 44, height: 44)
                     }
                     if optionsExpanded {
@@ -647,12 +735,14 @@ struct CameraView: View {
                             Image(systemName: "flashlight.on.fill")
                                 .font(.title3.weight(.semibold))
                                 .foregroundStyle(model.torchOn ? .yellow : .white)
+                                .rotationEffect(controlAngle)
                                 .frame(width: 44, height: 44)
                         }
                         Button { model.toggleGrid() } label: {
                             Image(systemName: "grid")
                                 .font(.title3.weight(.semibold))
                                 .foregroundStyle(model.showGrid ? .yellow : .white)
+                                .rotationEffect(controlAngle)
                                 .frame(width: 44, height: 44)
                         }
                     }
@@ -662,6 +752,7 @@ struct CameraView: View {
                         Image(systemName: optionsExpanded ? "chevron.right" : "ellipsis")
                             .font(.title3.weight(.semibold))
                             .foregroundStyle(model.torchOn && !optionsExpanded ? .yellow : .white)
+                            .rotationEffect(controlAngle)
                             .frame(width: 44, height: 44)
                     }
                 }
@@ -740,6 +831,7 @@ struct CameraView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
                 .foregroundStyle(isActive ? Color.yellow : .white)
+                .rotationEffect(controlAngle)
                 .frame(width: isActive ? 38 : 28, height: isActive ? 38 : 28)
                 .background(.black.opacity(isActive ? 0.5 : 0.35), in: Circle())
         }
@@ -763,6 +855,7 @@ struct CameraView: View {
                             .frame(width: 52, height: 52)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(.white.opacity(0.6)))
+                            .rotationEffect(controlAngle)
                     }
                 } else {
                     Color.clear.frame(width: 52, height: 52)
@@ -781,6 +874,7 @@ struct CameraView: View {
                     Text(verbatim: "\(model.capturedCount)")
                         .font(.headline.weight(.bold))
                         .foregroundStyle(.black)
+                        .rotationEffect(controlAngle)
                         .frame(width: 52, height: 52)
                         .background(.white, in: Circle())
                 } else {
