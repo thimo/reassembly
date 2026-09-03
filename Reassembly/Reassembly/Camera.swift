@@ -498,6 +498,9 @@ struct CameraView: View {
     @State private var isZooming = false
     @State private var focusPoint: CGPoint?
     @State private var showingLastCapture = false
+    /// Ingezoomd in de scherpte-check: dan is een veeg omlaag pannen, geen
+    /// sluiten, en een tik op de foto sluit ook niet.
+    @State private var lastCaptureZoomed = false
     @State private var statusMessage: String?
     @State private var statusToken = 0
     @State private var optionsExpanded = false
@@ -615,32 +618,47 @@ struct CameraView: View {
             if locksOrientation { updateControlAngle(animated: true) }
         }
         .statusBarHidden()
-        // Laatste foto groot, voor de scherpte-check; tik of veeg omlaag sluit.
+        // Laatste foto groot, voor de scherpte-check: pinch/dubbeltik zoomt,
+        // tik of veeg omlaag sluit (niet terwijl je ingezoomd bent — dan is
+        // de veeg pannen; de X-knop sluit altijd).
         .fullScreenCover(isPresented: $showingLastCapture) {
-            ZStack {
+            ZStack(alignment: .topLeading) {
                 Color.black.ignoresSafeArea()
-                if let image = model.lastCapture {
-                    // Draait mee met de glyphs: een landscape-foto vult zo het
-                    // scherm als je het toestel gekanteld houdt.
-                    GeometryReader { geo in
-                        let sideways = abs(controlDegrees.truncatingRemainder(dividingBy: 180)) == 90
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: sideways ? geo.size.height : geo.size.width,
-                                   height: sideways ? geo.size.width : geo.size.height)
-                            .rotationEffect(controlAngle)
-                            .position(x: geo.size.width / 2, y: geo.size.height / 2)
-                    }
-                    .ignoresSafeArea()
+                // Draait mee met de glyphs: een landscape-foto vult zo het
+                // scherm als je het toestel gekanteld houdt.
+                GeometryReader { geo in
+                    let sideways = abs(controlDegrees.truncatingRemainder(dividingBy: 180)) == 90
+                    ZoomableImage(
+                        image: model.lastCapture,
+                        onSingleTap: { if !lastCaptureZoomed { showingLastCapture = false } },
+                        onZoomChange: { lastCaptureZoomed = $0 }
+                    )
+                    .frame(width: sideways ? geo.size.height : geo.size.width,
+                           height: sideways ? geo.size.width : geo.size.height)
+                    .rotationEffect(controlAngle)
+                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
                 }
+                .ignoresSafeArea()
+
+                Button { showingLastCapture = false } label: {
+                    Image(systemName: "xmark")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .rotationEffect(controlAngle)
+                        .frame(width: 44, height: 44)
+                }
+                .glassEffect(.regular.interactive(), in: .circle)
+                .environment(\.colorScheme, .dark)
+                .padding()
             }
-            .onTapGesture { showingLastCapture = false }
             .simultaneousGesture(
                 DragGesture(minimumDistance: 30).onEnded { value in
-                    if value.translation.height > 80 { showingLastCapture = false }
+                    if !lastCaptureZoomed, value.translation.height > 80 {
+                        showingLastCapture = false
+                    }
                 }
             )
+            .onDisappear { lastCaptureZoomed = false }
         }
         // Pinch = zoomen (dual-wide lens: van 0.5× ultrawide tot 16× digitaal).
         .simultaneousGesture(
