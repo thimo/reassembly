@@ -14,6 +14,14 @@ ook geconfigureerd (bouwt bij push naar main). Nieuwe upload = eerst
 CLI-builds: `xcode-select` wijst naar Command Line Tools; gebruik
 `env DEVELOPER_DIR=/Applications/Xcode.app xcodebuild …`.
 
+CLI-upload naar TestFlight: `xcodebuild archive` (Release, generic/platform=iOS,
+`-allowProvisioningUpdates`), dan `xcodebuild -exportArchive` met een
+ExportOptions.plist (method `app-store-connect`, destination `upload`,
+`testFlightInternalTestingOnly` true, teamID SCP9WFJV88, signingStyle
+automatic). Let op: de exportstap moet met `PATH=/usr/bin:/bin:/usr/sbin:/sbin`
+draaien, anders pakt Apple's openrsync de Homebrew-rsync als server en faalt
+de export met "Copy failed".
+
 ## Conventies
 
 - SwiftUI, geen externe dependencies tenzij besproken
