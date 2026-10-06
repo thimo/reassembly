@@ -16,6 +16,9 @@ struct ContentView: View {
         Group {
             if store.hasFullAccess {
                 ProjectsListView(store: store)
+                #if DEBUG
+                    .task { await DemoSeed.run(store: store) }
+                #endif
             } else {
                 PermissionGate(store: store)
             }

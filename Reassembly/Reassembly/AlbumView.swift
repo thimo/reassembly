@@ -197,6 +197,7 @@ struct AlbumView: View {
             selected: selection.contains(asset.localIdentifier)
         )
         .onTapGesture { tap(asset) }
+        .accessibilityIdentifier("photoCell")
 
         if isSelecting {
             thumb
