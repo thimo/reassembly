@@ -144,3 +144,43 @@ take that one on the iPhone and use a list/grid shot instead on iPad.
 > Re-assembly verzamelt niets. Jouw foto's, jouw bibliotheek, jouw zaak.
 
 **Keywords**: demontage,reparatie,werkplaats,project,foto's,camera,album,documentatie,restauratie,onderhoud
+
+## Reply to App Review (Guideline 2.1, Information Needed, 2026-10-07)
+
+Paste as the reply on the App Review page and add to the Notes field. Attach
+the screen recording to the reply.
+
+> 1. Screen recording: attached. Recorded on an iPhone running the current
+>    iOS release. It starts at app launch and shows the typical flow: creating
+>    a project, taking a photo with the built-in camera, the photo grid, and
+>    the viewer. There is no account, no user-generated content shared with
+>    others, and no paid content.
+>
+> 2. Purpose and audience: Re-assembly is a camera for teardown photos. When
+>    you take something apart (a battery pack, an appliance, an engine) you
+>    photograph every step so you know how it goes back together. The target
+>    audience is hobbyists and small workshops. The value is that each
+>    project is an album in the user's own Photos library: no separate app
+>    storage, nothing to sync, and the photos remain the user's property
+>    inside Photos even if the app is deleted.
+>
+> 3. Setup and main features: install, open, grant full Photos access when
+>    asked (the app creates and reads albums, which is not possible with
+>    Limited access). Tap "+" to create a project (an album) or a folder. Open
+>    the project and tap the blue camera button to take photos; they are
+>    saved straight into the project. Swipe down to close the camera. Tap a
+>    photo to open the viewer, where it can be rotated or deleted. No login
+>    credentials or sample files are needed; the app works with an empty
+>    library.
+>
+> 4. External services: none. The app uses only Apple frameworks (PhotoKit,
+>    AVFoundation, CoreLocation). No data providers, no authentication
+>    service, no payment processor, no AI service, no analytics, no server
+>    of our own. Nothing leaves the device.
+>
+> 5. Regional differences: none. The app functions identically in all
+>    regions. The interface is available in English and Dutch, following the
+>    device language.
+>
+> 6. Regulated industry or protected material: not applicable. The app
+>    contains no third-party content.
