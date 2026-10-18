@@ -55,7 +55,7 @@ private struct PermissionGate: View {
     private var title: String {
         switch store.authorization {
         case .notDetermined: String(localized: "Access to your photos")
-        case .limited:       String(localized: "Full access needed")
+        case .limited:       String(localized: "Limited access")
         default:             String(localized: "No access to Photos")
         }
     }
@@ -63,9 +63,9 @@ private struct PermissionGate: View {
     private var message: String {
         switch store.authorization {
         case .notDetermined:
-            String(localized: "Re-assembly stores your teardown photos in Photos and manages albums there. That requires access.")
+            String(localized: "Re-assembly stores your teardown photos as albums in your Photos library. In the next step, iOS asks whether to allow this.")
         case .limited:
-            String(localized: "You gave limited access. Re-assembly can only create and read albums with full access to your photo library.")
+            String(localized: "You chose limited access. Re-assembly works with albums, which Photos only provides with full access. You can change this in Settings.")
         default:
             String(localized: "Turn on access to Photos in Settings to use Re-assembly.")
         }
@@ -75,7 +75,7 @@ private struct PermissionGate: View {
     private var action: some View {
         switch store.authorization {
         case .notDetermined:
-            Button("Allow Access") {
+            Button("Continue") {
                 Task { await store.requestAccess() }
             }
             .buttonStyle(.borderedProminent)

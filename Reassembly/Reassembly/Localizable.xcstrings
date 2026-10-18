@@ -121,12 +121,12 @@
         }
       }
     },
-    "Allow Access": {
+    "Continue": {
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Geef toegang"
+            "value": "Ga verder"
           }
         }
       }
@@ -251,12 +251,12 @@
         }
       }
     },
-    "Full access needed": {
+    "Limited access": {
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Volledige toegang nodig"
+            "value": "Beperkte toegang"
           }
         }
       }
@@ -401,12 +401,12 @@
         }
       }
     },
-    "Re-assembly stores your teardown photos in Photos and manages albums there. That requires access.": {
+    "Re-assembly stores your teardown photos as albums in your Photos library. In the next step, iOS asks whether to allow this.": {
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reassembly bewaart je demontagefoto's in Photos en beheert daar albums. Daarvoor is toegang nodig."
+            "value": "Re-assembly bewaart je demontagefoto's als albums in je Photos-bibliotheek. In de volgende stap vraagt iOS of je dit wilt toestaan."
           }
         }
       }
@@ -622,12 +622,12 @@
         }
       }
     },
-    "You gave limited access. Re-assembly can only create and read albums with full access to your photo library.": {
+    "You chose limited access. Re-assembly works with albums, which Photos only provides with full access. You can change this in Settings.": {
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Je gaf beperkte toegang. Reassembly kan alleen albums aanmaken en uitlezen met volledige toegang tot je fotobibliotheek."
+            "value": "Je koos voor beperkte toegang. Re-assembly werkt met albums, en die geeft Photos alleen vrij bij volledige toegang. Je kunt dit aanpassen in Instellingen."
           }
         }
       }
