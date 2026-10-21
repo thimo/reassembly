@@ -121,12 +121,12 @@ in Photos willen). Solo-commercieel sleutelen (klant-folders) kan gewoon binnen
 dit model; desnoods aparte Apple ID op een werkplaats-device. Eigen opslag +
 CloudKit-sync is daarmee definitief van tafel.
 
-Distributie: eerst TestFlight (intern, eigen devices). Een App Store-release
-is later niet uitgesloten (besluit herzien 2026-07-17); wel pas als Thimo de
-bijbehorende randzaken (privacy policy, listing, review) de moeite waard vindt.
+Distributie: eerst TestFlight (intern, eigen devices), sinds 2026-10-21 in de
+App Store (versie 1.0, gratis, 175 landen). Review-traject: ingediend
+2026-10-06, één informatieverzoek (2.1) en één afwijzing (5.1.1(iv),
+pre-permission-knop) — details in `docs/app-store-listing.md`.
 
 ## Open punten
 
-- Naam "Re-assembly" reserveren in App Store Connect
 - Widget Extension-target (ControlWidget) en LockedCameraCapture-extension
   aanmaken in Xcode — daarna kan de code erin
